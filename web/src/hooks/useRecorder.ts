@@ -117,8 +117,8 @@ export function useRecorder(): RecorderResult {
             const src = audioCtx.createMediaStreamSource(new MediaStream([track]))
             src.connect(destination)
           })
-        } catch (micErr) {
-          console.warn('Mic access denied:', micErr)
+        } catch {
+          // Mic access denied — continue without mic
         }
       }
 
@@ -130,8 +130,8 @@ export function useRecorder(): RecorderResult {
           })
           webcamStreamRef.current = camStream
           setWebcam(camStream)
-        } catch (camErr) {
-          console.warn('Webcam access denied:', camErr)
+        } catch {
+          // Webcam access denied — continue without webcam
         }
       }
 

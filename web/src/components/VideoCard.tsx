@@ -50,7 +50,7 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
           url: shareUrl,
         })
       } catch (err) {
-        console.log('Share cancelled or failed', err)
+        // Share cancelled or failed
       }
     } else {
       try {

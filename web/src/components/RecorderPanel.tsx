@@ -107,8 +107,7 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
           } else {
             resolve(undefined)
           }
-        } catch (e) {
-          console.error("Thumbnail capture error:", e)
+        } catch {
           resolve(undefined)
         }
       }
