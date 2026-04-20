@@ -4,6 +4,7 @@ Supports JWT auth, S3 storage, CORS for React frontend
 """
 
 import os
+import dj_database_url
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
@@ -12,8 +13,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ─── Security ────────────────────────────────────────────────────────────────
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
-DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
+DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='screencast-backend-957x.onrender.com').split(',')
 
 # ─── Applications ─────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -86,10 +87,10 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # ─── Database ─────────────────────────────────────────────────────────────────
 # Uses SQLite by default; switch to PostgreSQL via DATABASE_URL env var
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR}/db.sqlite3",
+        conn_max_age=600
+    )
 }
 
 # ─── Password Validation ──────────────────────────────────────────────────────
@@ -125,6 +126,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ─── CORS Configuration ───────────────────────────────────────────────────────
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+# Add specific Vercel URL to CORS if needed when ALL_ORIGINS is False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
 
 # ─── Django REST Framework ────────────────────────────────────────────────────
 REST_FRAMEWORK = {

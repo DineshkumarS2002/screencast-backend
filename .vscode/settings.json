@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "backend\\venv_fix\\Scripts\\python.exe",
+    "python.analysis.extraPaths": [
+        "./backend"
+    ]
+}

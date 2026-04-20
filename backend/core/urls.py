@@ -12,14 +12,9 @@ from api.views import HomeView
 
 urlpatterns = [
     # API Routes
+    path('', HomeView.as_view(), name='home'),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
-    
-    # Root: serve the frontend index.html
-    path('', TemplateView.as_view(template_name='index.html'), name='index'),
-    
-    # Catch-all: redirect any other unrecognized routes to the frontend for SPA handling
-    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]
 
 # Serve media files locally in development
