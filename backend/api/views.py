@@ -21,6 +21,21 @@ from .serializers import (
 )
 
 
+class HomeView(APIView):
+    """
+    GET /
+    Simple health check or welcome message.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response({
+            "status": "online",
+            "message": "ScreenCast AI Backend is running.",
+            "api_root": "/api/"
+        })
+
+
 # ─── Auth Views ───────────────────────────────────────────────────────────────
 
 class RegisterView(APIView):
