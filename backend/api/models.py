@@ -73,14 +73,14 @@ class Video(models.Model):
             try:
                 if os.path.isfile(self.file.path):
                     os.remove(self.file.path)
-            except Exception as e:
-                print(f"Warning: Could not delete file {self.file.path}: {e}")
+            except Exception:
+                pass
         
         if self.thumbnail:
             try:
                 if os.path.isfile(self.thumbnail.path):
                     os.remove(self.thumbnail.path)
-            except Exception as e:
-                print(f"Warning: Could not delete thumbnail {self.thumbnail.path}: {e}")
+            except Exception:
+                pass
 
         super().delete(*args, **kwargs)

@@ -102,12 +102,10 @@ class UpdateProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def put(self, request):
-        print("DEBUG: Profile update data:", request.data, flush=True)
         serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(UserSerializer(request.user).data)
-        print("DEBUG: Profile update errors:", serializer.errors, flush=True)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request):
