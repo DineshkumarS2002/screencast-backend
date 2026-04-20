@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { videoApi, type Video } from '../api/endpoints'
 import { VideoCard } from '../components/VideoCard'
 import { useToast } from '../hooks/useToast'
@@ -71,6 +71,7 @@ export function LibraryPage() {
                 key={video.id} 
                 video={video} 
                 onDelete={fetchVideos}
+                onToast={addToast}
               />
             ))}
           </div>
