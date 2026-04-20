@@ -1,0 +1,15 @@
+node_modules/
+venv/
+venv2/
+venv_fix/
+__pycache__/
+*.py[cod]
+*$py.class
+db.sqlite3
+.env
+.env.development
+media/
+dist/
+.vite/
+.DS_Store
+*.log
