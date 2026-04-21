@@ -38,9 +38,18 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
 
   useEffect(() => {
+    let active = true
     if (autoPlay && videoRef.current) {
-      videoRef.current.play().catch(() => setIsPlaying(false))
+      const playPromise = videoRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          if (active && error.name !== 'AbortError') {
+            setIsPlaying(false)
+          }
+        })
+      }
     }
+    return () => { active = false }
   }, [autoPlay, videoSrc])
 
   const togglePlay = () => {
@@ -48,7 +57,12 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
       if (isPlaying) {
         videoRef.current.pause()
       } else {
-        videoRef.current.play()
+        const playPromise = videoRef.current.play()
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            setIsPlaying(false)
+          })
+        }
       }
       setIsPlaying(!isPlaying)
     }

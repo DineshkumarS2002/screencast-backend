@@ -92,11 +92,16 @@ class LogoutView(APIView):
     def post(self, request):
         try:
             refresh_token = request.data.get('refresh')
+            if not refresh_token:
+                return Response({'message': 'No refresh token provided, but session cleared locally.'}, status=status.HTTP_200_OK)
+            
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
         except Exception:
-            return Response({'error': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+            # If token is invalid/expired, we still return 200 because the client 
+            # should clear local tokens anyway and the session is effectively over.
+            return Response({'message': 'Session ended.'}, status=status.HTTP_200_OK)
 
 
 class MeView(APIView):

@@ -1,0 +1,16 @@
+[[redirects]]
+  from = "/api/*"
+  to = "https://screencast-backend-957x.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/media/*"
+  to = "https://screencast-backend-957x.onrender.com/media/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

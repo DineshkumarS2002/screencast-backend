@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { UserPlus, Mail, Lock, User, ArrowRight } from 'lucide-react'
+import { UserPlus, Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../hooks/useToast'
 import { ToastContainer } from '../components/ToastContainer'
@@ -12,6 +12,8 @@ export function RegisterPage() {
     password: '',
     confirmPassword: ''
   })
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isPending, setIsPending] = useState(false)
   
   const { register } = useAuth()
@@ -93,12 +95,23 @@ export function RegisterPage() {
                 <Lock size={18} />
               </span>
               <input 
-                type="password" required 
+                type={showPassword ? 'text' : 'password'} required 
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
                 placeholder="••••••••"
-                style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.8rem' }}
+                style={{ width: '100%', padding: '0.75rem 3rem 0.75rem 2.8rem' }}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem'
+                }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 
@@ -109,12 +122,23 @@ export function RegisterPage() {
                 <Lock size={18} />
               </span>
               <input 
-                type="password" required 
+                type={showConfirmPassword ? 'text' : 'password'} required 
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                 placeholder="••••••••"
-                style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.8rem' }}
+                style={{ width: '100%', padding: '0.75rem 3rem 0.75rem 2.8rem' }}
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={{
+                  position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem'
+                }}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 

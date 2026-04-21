@@ -14,6 +14,12 @@ export function WebcamOverlay({ stream }: WebcamOverlayProps) {
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.srcObject = stream
+      const playPromise = videoRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Silence interruption errors
+        })
+      }
     }
   }, [stream])
 
@@ -33,7 +39,6 @@ export function WebcamOverlay({ stream }: WebcamOverlayProps) {
     }}>
       <video
         ref={videoRef}
-        autoPlay
         muted
         playsInline
         style={{

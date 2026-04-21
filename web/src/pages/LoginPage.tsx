@@ -40,7 +40,7 @@ export function LoginPage() {
           </div>
           <h1 style={{ marginBottom: '0.5rem' }}>Welcome Back</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-            Sign in to access your recordings and AI tools
+            Sign in to access your recordings
           </p>
         </div>
 
