@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { Library, AlertCircle, RefreshCw, Layers } from 'lucide-react'
 import { videoApi, type Video } from '../api/endpoints'
 import { VideoCard } from '../components/VideoCard'
