@@ -71,10 +71,15 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 class VideoUploadSerializer(serializers.ModelSerializer):
     """Used for uploading a new recording."""
+    # Allow 'video' as an alias for 'file'
+    video = serializers.FileField(write_only=True, required=False)
 
     class Meta:
         model = Video
-        fields = ('title', 'file', 'thumbnail', 'duration', 'mime_type')
+        fields = ('title', 'file', 'video', 'thumbnail', 'duration', 'mime_type')
+        extra_kwargs = {
+            'file': {'required': False}  # Handled in validate
+        }
 
     def validate_file(self, value):
         """Ensure only video files are accepted."""
@@ -89,6 +94,19 @@ class VideoUploadSerializer(serializers.ModelSerializer):
         if value.size > max_size:
             raise serializers.ValidationError('File too large. Maximum size is 500MB.')
         return value
+
+    def validate(self, attrs):
+        # Handle 'video' alias
+        video = attrs.pop('video', None)
+        if video:
+            attrs['file'] = video
+        
+        if not attrs.get('file'):
+            raise serializers.ValidationError({"file": "No video file provided."})
+            
+        # Run original file validation on the mapped file
+        self.validate_file(attrs['file'])
+        return attrs
 
     def create(self, validated_data):
         """Auto-calculate file size when saving."""
