@@ -85,17 +85,21 @@ export function useRecorder(): RecorderResult {
   }, []) // eslint-disable-line
 
   // ─── Start Recording ─────────────────────────────────────────────────────
-  const start = useCallback(async (opts: RecorderOptions) => {
+  const start = useCallback(async (opts: RecorderOptions & { useCameraOnly?: boolean }) => {
     setError(null)
     const quality = QUALITY_MAP[opts.videoQuality]
 
     try {
-      // 1. Capture screen (prompts the OS picker)
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: { ...quality, cursor: 'always' } as any,
-        audio: true,  // system audio (if supported)
-      })
-      screenStreamRef.current = screenStream
+      let screenStream: MediaStream | null = null;
+      
+      // 1. Capture screen (prompts the OS picker) - Skip if camera only (for mobile)
+      if (!opts.useCameraOnly) {
+        screenStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { ...quality, cursor: 'always' } as any,
+          audio: true,  // system audio (if supported)
+        })
+        screenStreamRef.current = screenStream
+      }
 
       // 2. Combine audio tracks via AudioContext
       const audioCtx = new AudioContext()
@@ -106,10 +110,12 @@ export function useRecorder(): RecorderResult {
       audioCtxRef.current = audioCtx
 
       // Add system audio (from screen share) if present
-      screenStream.getAudioTracks().forEach(track => {
-        const src = audioCtx.createMediaStreamSource(new MediaStream([track]))
-        src.connect(destination)
-      })
+      if (screenStream) {
+        screenStream.getAudioTracks().forEach(track => {
+          const src = audioCtx.createMediaStreamSource(new MediaStream([track]))
+          src.connect(destination)
+        })
+      }
 
       // 3. Optionally capture microphone
       if (opts.includeMic) {
@@ -138,9 +144,13 @@ export function useRecorder(): RecorderResult {
         }
       }
 
-      // 5. Build combined stream: video from screen + audio from destination
+      // 5. Build combined stream: video from source + audio from destination
+      const videoTracks = screenStream 
+        ? screenStream.getVideoTracks() 
+        : (webcamStreamRef.current ? webcamStreamRef.current.getVideoTracks() : [])
+
       const combinedStream = new MediaStream([
-        ...screenStream.getVideoTracks(),
+        ...videoTracks,
         ...destination.stream.getAudioTracks(),
       ])
 

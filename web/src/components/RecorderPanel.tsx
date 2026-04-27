@@ -62,11 +62,21 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
   const status = statusConfig[rec.state]
 
   const isSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)
+  const isMobile = !isSupported && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
-  const handleStart = async () => {
-    await rec.start(opts)
-    if (rec.error) onToast(rec.error, 'error')
+  const handleStart = async (useCameraOnly = false) => {
+    try {
+      const options: any = { ...opts }
+      if (useCameraOnly) {
+        options.useCameraOnly = true
+        options.includeWebcam = true // Ensure webcam is on for camera-only mode
+      }
+      await rec.start(options)
+    } catch (err: any) {
+      // Error is already handled by the hook and exposed via rec.error
+      console.error('Recording start failed:', err)
+    }
   }
 
   const handleDownload = async () => {
@@ -220,21 +230,36 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
 
         {/* Primary record controls */}
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.25rem' }}>
-          {!isSupported ? (
+          {!isSupported && !isMobile ? (
             <div style={{ 
               padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', 
               borderRadius: '12px', textAlign: 'center', color: '#fca5a5', fontSize: '0.9rem', width: '100%' 
             }}>
               <Monitor size={24} style={{ margin: '0 auto 0.5rem', opacity: 0.8 }} />
               <strong>Unsupported Device</strong>
-              <p style={{ marginTop: '0.4rem', opacity: 0.9 }}>Screen recording requires a desktop browser. Please open this app on a PC or Mac (Chrome, Edge, or Safari) to start recording.</p>
+              <p style={{ marginTop: '0.4rem', opacity: 0.9 }}>This browser does not support media recording. Please try a modern browser like Chrome or Safari.</p>
             </div>
           ) : isIdle && (
-            <button id="btn-start-record" className="btn btn-primary" onClick={handleStart} style={{ padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', boxShadow: '0 0 20px var(--accent-glow)' }}>
-              <Circle size={18} fill="currentColor" />
-              Start Recording Session
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', alignItems: 'center' }}>
+              {isSupported ? (
+                <button id="btn-start-record" className="btn btn-primary" onClick={() => handleStart(false)} style={{ padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', boxShadow: '0 0 20px var(--accent-glow)' }}>
+                  <Circle size={18} fill="currentColor" />
+                  Start Screen Recording
+                </button>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '0.5rem' }}>
+                  <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                     Screen recording is not supported on mobile browsers, but you can still record using your camera!
+                  </p>
+                  <button id="btn-start-camera-record" className="btn btn-primary" onClick={() => handleStart(true)} style={{ padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', boxShadow: '0 0 20px var(--accent-glow)' }}>
+                    <Video size={18} fill="currentColor" />
+                    Start Camera Recording
+                  </button>
+                </div>
+              )}
+            </div>
           )}
+
 
           {isRecording && (
             <div className="flex gap-2" style={{ background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
