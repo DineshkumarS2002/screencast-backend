@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'storages',
+    'cloudinary',
+    'cloudinary_storage',
 
     # Local
     'api',
@@ -122,14 +124,21 @@ if WEB_DIST.exists():
 # WhiteNoise storage: Use the newer storage if using WhiteNoise 4.0+
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
-# Media (local fallback if S3 is not configured)
+# Cloudinary config
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dkmaci7o3',
+    'API_KEY': '915117853824555',
+    'API_SECRET': 'el0jKp7RVL4Vg7FSxyawsSBxIAU',
+}
+
+# Media (local fallback if S3/Cloudinary is not configured)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 

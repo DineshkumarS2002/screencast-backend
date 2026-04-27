@@ -115,17 +115,23 @@ class VideoListSerializer(serializers.ModelSerializer):
 
     def get_file_url(self, obj):
         if obj.file:
+            url = obj.file.url
+            if url.startswith('http'):
+                return url
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(obj.file.url)
+                return request.build_absolute_uri(url)
             # Fallback for hardcoded host (Render)
-            return 'https://screencast-backend-957x.onrender.com' + obj.file.url
+            return 'https://screencast-backend-957x.onrender.com' + url
         return None
 
     def get_thumbnail_url(self, obj):
         if obj.thumbnail:
+            url = obj.thumbnail.url
+            if url.startswith('http'):
+                return url
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(obj.thumbnail.url)
-            return 'https://screencast-backend-957x.onrender.com' + obj.thumbnail.url
+                return request.build_absolute_uri(url)
+            return 'https://screencast-backend-957x.onrender.com' + url
         return None
