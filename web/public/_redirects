@@ -1,0 +1,3 @@
+/api/*  https://screencast-backend-957x.onrender.com/api/:splat  200
+/media/* https://screencast-backend-957x.onrender.com/media/:splat 200
+/*       /index.html                                               200

@@ -5,7 +5,11 @@ import axios from 'axios'
  * Proxies in vite.config.ts handle routing to http://localhost:8000
  */
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api` : '/api',
+  // Use the full Render URL in production if proxying isn't set up, 
+  // otherwise use the relative path (handled by _redirects)
+  baseURL: import.meta.env.VITE_API_BASE_URL 
+    ? `${import.meta.env.VITE_API_BASE_URL}/api` 
+    : (window.location.hostname === 'localhost' ? '/api' : 'https://screencast-backend-957x.onrender.com/api'),
   headers: {
     'Content-Type': 'application/json',
   },
