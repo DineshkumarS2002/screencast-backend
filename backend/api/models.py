@@ -68,19 +68,15 @@ class Video(models.Model):
         return None
 
     def delete(self, *args, **kwargs):
-        """Override delete to also remove the actual file from storage."""
+        """
+        Override delete to remove the file from storage.
+        With remote storage (Cloudinary), we use the storage's delete method 
+        instead of checking os.path.isfile.
+        """
         if self.file:
-            try:
-                if os.path.isfile(self.file.path):
-                    os.remove(self.file.path)
-            except Exception:
-                pass
+            self.file.storage.delete(self.file.name)
         
         if self.thumbnail:
-            try:
-                if os.path.isfile(self.thumbnail.path):
-                    os.remove(self.thumbnail.path)
-            except Exception:
-                pass
+            self.thumbnail.storage.delete(self.thumbnail.name)
 
         super().delete(*args, **kwargs)
