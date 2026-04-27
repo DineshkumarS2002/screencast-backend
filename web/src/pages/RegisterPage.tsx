@@ -198,26 +198,9 @@ export function RegisterPage() {
             <Link to="/login" style={{ color: 'var(--accent)', fontWeight: 600 }}>Sign in here</Link>
           </p>
         </div>
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          <button 
-            className="btn btn-primary" 
-            type="submit" 
-            disabled={isPending}
-            style={{ marginTop: '0.5rem', padding: '0.85rem' }}
-          >
-            {isPending ? 'Creating Account...' : 'Continue'} <ArrowRight size={18} />
-          </button>
-        </form>
-
-        <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          Already have an account? <Link to="/login" style={{ color: 'var(--accent)', fontWeight: 600 }}>Log In</Link>
-        </p>
       </div>
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </main>
   )
 }
+

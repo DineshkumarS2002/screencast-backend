@@ -130,10 +130,9 @@ export function LoginPage() {
             New here?{' '}
             <Link to="/register" style={{ color: 'var(--accent)', fontWeight: 600 }}>Create an account</Link>
           </p>
-        </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </main>
   )
 }
+
