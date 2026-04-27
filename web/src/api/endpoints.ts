@@ -17,7 +17,7 @@ export interface Video {
   user: User
   title: string
   file_url: string
-  thumbnail: string | null
+  thumbnail_url: string | null
   duration: number
   file_size: number
   mime_type: string

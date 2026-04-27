@@ -118,9 +118,9 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
             overflow: 'hidden',
           }}
         >
-          {video.thumbnail ? (
+          {video.thumbnail_url ? (
             <img 
-              src={sanitizeUrl(video.thumbnail)} 
+              src={sanitizeUrl(video.thumbnail_url)} 
               alt="" 
               style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} 
             />

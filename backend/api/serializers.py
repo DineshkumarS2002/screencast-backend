@@ -102,17 +102,30 @@ class VideoListSerializer(serializers.ModelSerializer):
     """Used for listing recordings — includes URL but not the raw file field."""
 
     file_url = serializers.SerializerMethodField()
+    thumbnail_url = serializers.SerializerMethodField()
     user = UserSerializer(read_only=True)
 
     class Meta:
         model = Video
         fields = (
-            'id', 'user', 'title', 'file_url', 'thumbnail',
+            'id', 'user', 'title', 'file_url', 'thumbnail_url',
             'duration', 'file_size', 'mime_type',
             'created_at', 'updated_at'
         )
 
     def get_file_url(self, obj):
         if obj.file:
-            return obj.file.url  # Returns relative /media/... path
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            # Fallback for hardcoded host (Render)
+            return 'https://screencast-backend-957x.onrender.com' + obj.file.url
+        return None
+
+    def get_thumbnail_url(self, obj):
+        if obj.thumbnail:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.thumbnail.url)
+            return 'https://screencast-backend-957x.onrender.com' + obj.thumbnail.url
         return None
