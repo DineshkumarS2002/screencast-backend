@@ -133,9 +133,9 @@ STORAGES = {
 
 # Cloudinary config
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dkmaci7o3',
-    'API_KEY': '915117853824555',
-    'API_SECRET': 'el0jKp7RVL4Vg7FSxyawsSBxIAU',
+    'CLOUD_NAME': os.environ.get('CLOUD_NAME', 'dkmaci7o3'),
+    'API_KEY': os.environ.get('API_KEY', '915117853824555'),
+    'API_SECRET': os.environ.get('API_SECRET', 'el0jKp7RVL4Vg7FSxyawsSBxIAU'),
 }
 
 # Media (local fallback if S3/Cloudinary is not configured)

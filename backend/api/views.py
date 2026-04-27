@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from .models import Video
 from .serializers import (
@@ -161,6 +162,7 @@ class VideoUploadView(APIView):
     Accepts multipart form data with a video file and optional metadata.
     """
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request):
         serializer = VideoUploadSerializer(data=request.data)
