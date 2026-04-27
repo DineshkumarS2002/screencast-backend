@@ -37,95 +37,107 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="container" style={{ padding: '3rem 0', maxWidth: '800px' }}>
+    <div className="container" style={{ padding: '4rem 0', maxWidth: '800px' }}>
       <button 
         className="btn btn-ghost" 
         onClick={() => navigate(-1)}
-        style={{ marginBottom: '2rem', fontSize: '0.85rem' }}
+        style={{ marginBottom: '2.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}
       >
-        <ArrowLeft size={16} /> Back
+        <ArrowLeft size={16} /> Return to previous
       </button>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
-        <div className="logo-icon" style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-            <SettingsIcon size={24} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '3.5rem' }}>
+        <div className="card-hover" style={{
+          width: 56, height: 56, borderRadius: '16px',
+          background: 'linear-gradient(135deg, var(--accent), var(--accent-alt))',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 8px 24px var(--accent-glow)',
+        }}>
+            <SettingsIcon size={28} color="white" />
         </div>
         <div>
-          <h1 style={{ marginBottom: '0.2rem' }}>Account Settings</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Manage your profile and security preferences.</p>
+          <h1 style={{ marginBottom: '0.25rem', fontSize: '2.25rem' }}>Preferences</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Configure your security and workspace parameters.</p>
         </div>
       </div>
 
-      <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
         {/* Password Card */}
-        <div className="glass" style={{ padding: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-            <Lock size={20} color="var(--rec-red)" />
-            <h2 style={{ fontSize: '1.25rem' }}>Change Password</h2>
+        <div className="glass" style={{ padding: '2.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(56,189,248,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Lock size={18} color="var(--accent-light)" />
+            </div>
+            <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Cryptographic Security</h2>
           </div>
 
-          <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Current Password</label>
+          <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="input-group">
+              <label style={{ display: 'block', marginBottom: '0.6rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Current Password</label>
               <input 
                 type="password" 
                 className="input" 
                 value={pass.old}
                 onChange={e => setPass({...pass, old: e.target.value})}
+                placeholder="Enter current password"
                 required 
               />
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>New Password</label>
+            <div className="input-group">
+              <label style={{ display: 'block', marginBottom: '0.6rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>New Password</label>
               <input 
                 type="password" 
                 className="input" 
                 value={pass.new}
                 onChange={e => setPass({...pass, new: e.target.value})}
+                placeholder="Minimum 6 characters"
                 required 
                 minLength={6}
               />
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Confirm New Password</label>
+            <div className="input-group">
+              <label style={{ display: 'block', marginBottom: '0.6rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Confirm New Password</label>
               <input 
                 type="password" 
                 className="input" 
                 value={pass.confirm}
                 onChange={e => setPass({...pass, confirm: e.target.value})}
+                placeholder="Repeat new password"
                 required 
               />
             </div>
-            <button className="btn btn-ghost" type="submit" disabled={updatingPass} style={{ marginTop: '0.5rem', borderColor: 'rgba(239,68,68,0.2)' }}>
-              {updatingPass ? 'Updating...' : 'Update Password'}
+            <button className="btn btn-primary" type="submit" disabled={updatingPass} style={{ marginTop: '0.5rem', alignSelf: 'flex-start', padding: '0.75rem 2rem', borderRadius: '12px' }}>
+              {updatingPass ? 'Updating Security...' : 'Apply New Password'}
             </button>
           </form>
         </div>
 
         {/* Danger Zone */}
-        <div className="glass" style={{ marginTop: '2rem', padding: '2rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-            <Trash2 size={20} color="var(--rec-red)" />
-            <h2 style={{ fontSize: '1.25rem', color: 'var(--rec-red)' }}>Danger Zone</h2>
+        <div className="glass" style={{ padding: '2.5rem', border: '1px solid rgba(239, 68, 68, 0.15)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ width: 36, height: 36, borderRadius: '10px', background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Trash2 size={18} color="#fca5a5" />
+            </div>
+            <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#fca5a5' }}>Sensitive Area</h2>
           </div>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-            Deleting your account will permanently remove all your recordings and data. This action cannot be undone.
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6 }}>
+            Deactivating your account will result in the permanent deletion of all stored recordings and metadata. This action is irreversible.
           </p>
           <button 
             className="btn btn-danger" 
             onClick={() => confirm('Are you absolutely sure you want to delete your account? This will remove all your cloud recordings.')}
-            style={{ borderRadius: '12px' }}
+            style={{ borderRadius: '12px', padding: '0.75rem 2rem' }}
           >
-            Deactivate Account
+            Deactivate Access
           </button>
-        </div>
+      </div>
 
-        <div className="glass" style={{ marginTop: '2rem', padding: '1.5rem', textAlign: 'center' }}>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Tip: You can change your capture preferences directly in the <a href="/library" style={{ color: 'var(--accent-light)', textDecoration: 'underline' }}>library</a> section.
-          </p>
-        </div>
+      <div className="glass" style={{ marginTop: '2.5rem', padding: '1.5rem', textAlign: 'center', background: 'transparent', border: '1px solid var(--glass-border)' }}>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          Need technical support? Contact us at <span style={{ color: 'var(--accent-light)' }}>support@screencast.ai</span>
+        </p>
       </div>
     </div>
   )
 }
+

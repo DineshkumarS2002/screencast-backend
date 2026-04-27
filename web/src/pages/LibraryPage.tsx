@@ -1,91 +1,134 @@
-import { useEffect, useState } from 'react'
+/**
+ * LibraryPage — lists all recordings for the authenticated user.
+ */
+
+import { useState, useEffect, useCallback } from 'react'
+import { Library, AlertCircle, RefreshCw, Layers } from 'lucide-react'
 import { videoApi, type Video } from '../api/endpoints'
 import { VideoCard } from '../components/VideoCard'
 import { useToast } from '../hooks/useToast'
 import { ToastContainer } from '../components/ToastContainer'
-import { Library, Search, Loader2 } from 'lucide-react'
 
 export function LibraryPage() {
   const [videos, setVideos] = useState<Video[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const { toasts, addToast, removeToast } = useToast()
 
-  const fetchVideos = async () => {
+  const fetchVideos = useCallback(async () => {
+    setLoading(true)
+    setError('')
     try {
       const res = await videoApi.list()
       setVideos(res.data.results)
-    } catch (err) {
-      addToast('Failed to load library', 'error')
+    } catch (err: any) {
+      setError('Failed to load recordings. Please try again.')
+      addToast('Error fetching recordings', 'error')
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
-  }
+  }, [addToast])
 
   useEffect(() => {
     fetchVideos()
-  }, [])
+  }, [fetchVideos])
 
-  const filteredVideos = videos.filter(v => 
-    v.title.toLowerCase().includes(search.toLowerCase())
-  )
+  const handleDelete = async (id: number) => {
+    try {
+      await videoApi.delete(id)
+      setVideos(prev => prev.filter(v => v.id !== id))
+    } catch (err) {
+      addToast('Failed to delete recording', 'error')
+    }
+  }
 
   return (
-    <main style={{ flex: 1, padding: '2rem 0' }}>
-      <div className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
+    <>
+    <main style={{ flex: 1, padding: '3rem 0' }}>
+      <div className="container" style={{ maxWidth: 1000 }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1.5rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--accent)', marginBottom: '0.5rem' }}>
-              <Library size={24} />
-              <span style={{ fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.8rem' }}>Personal Collection</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+              <div className="card-hover" style={{
+                width: 48, height: 48, borderRadius: '14px',
+                background: 'linear-gradient(135deg, var(--accent), var(--accent-alt))',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 8px 24px var(--accent-glow)',
+              }}>
+                <Library size={24} color="white" />
+              </div>
+              <h1 style={{ margin: 0, fontSize: '2rem' }}>My Library</h1>
             </div>
-            <h1>Your Library</h1>
+            <p style={{ color: 'var(--text-secondary)', paddingLeft: '3.75rem' }}>
+              Managing <strong>{videos.length}</strong> cloud session{videos.length !== 1 ? 's' : ''}
+            </p>
           </div>
+          <button 
+            className="btn btn-ghost" 
+            onClick={fetchVideos}
+            disabled={loading}
+            style={{ borderRadius: '12px', padding: '0.75rem 1.25rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
+          >
+            <RefreshCw size={18} className={loading ? 'spin' : ''} style={{ marginRight: '0.5rem' }} />
+            Sync Library
+          </button>
+        </header>
 
-          <div style={{ position: 'relative', width: '100%', maxWidth: '320px' }}>
-            <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-              <Search size={18} />
-            </span>
-            <input 
-              type="text" 
-              placeholder="Search recordings..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.8rem' }}
-            />
+        {loading && videos.length === 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8rem 0' }}>
+            <div className="spin-slow" style={{ width: 48, height: 48, border: '4px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--accent)', borderRadius: '50%' }} />
+            <p style={{ marginTop: '2rem', color: 'var(--text-muted)', fontWeight: 500 }}>Decrypting your vault...</p>
           </div>
-        </div>
-
-        {isLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem 0' }}>
-            <Loader2 className="animate-spin" size={48} color="var(--accent)" />
+        ) : error ? (
+          <div className="glass" style={{ padding: '4rem', textAlign: 'center', maxWidth: 500, margin: '0 auto' }}>
+            <div style={{ width: 64, height: 64, background: 'rgba(239,68,68,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+              <AlertCircle size={32} color="#fca5a5" />
+            </div>
+            <h3 style={{ marginBottom: '0.75rem' }}>Connection established, but...</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>{error}</p>
+            <button className="btn btn-primary" onClick={fetchVideos}>Retry Connection</button>
           </div>
-        ) : filteredVideos.length > 0 ? (
+        ) : videos.length === 0 ? (
+          <div className="glass" style={{ padding: '6rem 2rem', textAlign: 'center', borderStyle: 'dashed', background: 'transparent', maxWidth: 600, margin: '0 auto' }}>
+            <div style={{ 
+              width: 80, height: 80, background: 'rgba(255,255,255,0.02)', borderRadius: '24px', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem',
+              border: '1px solid var(--glass-border)'
+            }}>
+              <Layers size={40} color="var(--text-muted)" />
+            </div>
+            <h2 style={{ marginBottom: '1rem' }}>No recordings found</h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '2.5rem', maxWidth: '380px', margin: '0 auto 2.5rem' }}>
+              Your cloud library is empty. Start your first high-precision recording session today.
+            </p>
+            <Link to="/" className="btn btn-primary" style={{ padding: '1rem 2rem', borderRadius: '16px' }}>Start Recording</Link>
+          </div>
+        ) : (
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-            gap: '1.5rem' 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+            gap: '2rem' 
           }}>
-            {filteredVideos.map(video => (
+            {videos.map(video => (
               <VideoCard 
                 key={video.id} 
                 video={video} 
-                onDelete={fetchVideos}
+                onDelete={handleDelete}
                 onToast={addToast}
               />
             ))}
           </div>
-        ) : (
-          <div className="glass" style={{ textAlign: 'center', padding: '5rem 2rem' }}>
-            <Library size={48} style={{ marginBottom: '1.5rem', color: 'var(--text-muted)' }} />
-            <h2 style={{ marginBottom: '0.5rem' }}>No recordings found</h2>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              {search ? "Your search didn't match any videos." : "You haven't recorded any videos yet."}
-            </p>
-          </div>
         )}
       </div>
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </main>
+
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+      <style>{`
+        .spin { animation: spin 1s linear infinite; }
+        .spin-slow { animation: spin 1.5s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
+    </>
   )
 }
