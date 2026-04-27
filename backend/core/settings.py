@@ -67,10 +67,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'core.urls'
 
+# Path to built React frontend (used in TEMPLATES and STATICFILES)
+WEB_DIST = BASE_DIR.parent / 'web' / 'dist'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR.parent / 'web' / 'dist'],
+        'DIRS': [WEB_DIST] if WEB_DIST.exists() else [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -111,12 +114,20 @@ USE_TZ = True
 # ─── Static & Media Files ─────────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR.parent / 'web' / 'dist',
-]
 
-# WhiteNoise storage to handle static file compression and caching
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_DIRS = []
+if WEB_DIST.exists():
+    STATICFILES_DIRS.append(WEB_DIST)
+
+# WhiteNoise storage: Use the newer storage if using WhiteNoise 4.0+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Media (local fallback if S3 is not configured)
 MEDIA_URL = '/media/'
