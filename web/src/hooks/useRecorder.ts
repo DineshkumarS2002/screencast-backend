@@ -185,9 +185,11 @@ export function useRecorder(): RecorderResult {
       }
 
       // When user stops sharing the screen, auto-stop recording
-      screenStream.getVideoTracks()[0].onended = () => {
-        if (mediaRecorderRef.current?.state === 'recording') {
-          mediaRecorderRef.current.stop()
+      if (screenStream) {
+        screenStream.getVideoTracks()[0].onended = () => {
+          if (mediaRecorderRef.current?.state === 'recording') {
+            mediaRecorderRef.current.stop()
+          }
         }
       }
 
