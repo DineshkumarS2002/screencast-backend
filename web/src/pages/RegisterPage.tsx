@@ -51,6 +51,7 @@ export function RegisterPage() {
   return (
     <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
       <div style={{ width: '100%', maxWidth: 440 }}>
+        {/* Logo Section */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div className="card-hover" style={{
             width: 64, height: 64, borderRadius: '18px',
@@ -77,6 +78,7 @@ export function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Username */}
             <div className="input-group">
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                 Username
@@ -97,6 +99,7 @@ export function RegisterPage() {
               {errors.username && <p style={{ color: '#fca5a5', fontSize: '0.75rem', marginTop: '0.4rem' }}>{errors.username}</p>}
             </div>
 
+            {/* Email */}
             <div className="input-group">
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                 Email Address
@@ -117,6 +120,7 @@ export function RegisterPage() {
               {errors.email && <p style={{ color: '#fca5a5', fontSize: '0.75rem', marginTop: '0.4rem' }}>{errors.email}</p>}
             </div>
 
+            {/* Password */}
             <div className="input-group">
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                 Password
@@ -144,6 +148,7 @@ export function RegisterPage() {
               {errors.password && <p style={{ color: '#fca5a5', fontSize: '0.75rem', marginTop: '0.4rem' }}>{errors.password}</p>}
             </div>
 
+            {/* Confirm Password */}
             <div className="input-group">
               <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                 Confirm Password
@@ -203,4 +208,3 @@ export function RegisterPage() {
     </main>
   )
 }
-

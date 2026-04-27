@@ -1,27 +1,27 @@
-import React, { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react'
+import { LogIn, Mail, Lock, Video, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { useToast } from '../hooks/useToast'
-import { ToastContainer } from '../components/ToastContainer'
 
 export function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [isPending, setIsPending] = useState(false)
-  
+  const [showPwd, setShowPwd] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
   const { login } = useAuth()
   const navigate = useNavigate()
-  const { toasts, addToast, removeToast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    setIsPending(true)
+    setError('')
+    setLoading(true)
     try {
       await login(username, password)
       navigate('/')
     } catch (err: any) {
-      addToast(err.response?.data?.message || 'Login failed. Please check your credentials.', 'error')
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.')
     } finally {
       setLoading(false)
     }
@@ -61,16 +61,22 @@ export function LoginPage() {
               <label htmlFor="input-username" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                 Username
               </label>
-              <input
-                id="input-username"
-                className="input"
-                type="text"
-                autoComplete="username"
-                placeholder="Enter your username"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                required
-              />
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                  <Mail size={18} />
+                </span>
+                <input
+                  id="input-username"
+                  className="input"
+                  type="text"
+                  autoComplete="username"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  style={{ paddingLeft: '2.8rem' }}
+                  required
+                />
+              </div>
             </div>
 
             <div>
@@ -78,6 +84,9 @@ export function LoginPage() {
                 Password
               </label>
               <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                  <Lock size={18} />
+                </span>
                 <input
                   id="input-password"
                   className="input"
@@ -86,7 +95,7 @@ export function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  style={{ paddingRight: '3rem' }}
+                  style={{ paddingLeft: '2.8rem', paddingRight: '3rem' }}
                   required
                 />
                 <button
@@ -130,9 +139,9 @@ export function LoginPage() {
             New here?{' '}
             <Link to="/register" style={{ color: 'var(--accent)', fontWeight: 600 }}>Create an account</Link>
           </p>
+        </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </main>
   )
 }
-
