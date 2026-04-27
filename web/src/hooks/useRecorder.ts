@@ -98,7 +98,10 @@ export function useRecorder(): RecorderResult {
       screenStreamRef.current = screenStream
 
       // 2. Combine audio tracks via AudioContext
-      const audioCtx   = new AudioContext()
+      const audioCtx = new AudioContext()
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume()
+      }
       const destination = audioCtx.createMediaStreamDestination()
       audioCtxRef.current = audioCtx
 
@@ -142,9 +145,14 @@ export function useRecorder(): RecorderResult {
       ])
 
       // 6. Set up MediaRecorder
-      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-        ? 'video/webm;codecs=vp9,opus'
-        : 'video/webm'
+      // VP8 is more widely compatible and stable than VP9 on older hardware
+      const types = [
+        'video/webm;codecs=vp8,opus',
+        'video/webm;codecs=vp9,opus',
+        'video/webm',
+        'video/mp4'
+      ]
+      const mimeType = types.find(t => MediaRecorder.isTypeSupported(t)) || 'video/webm'
 
       const recorder = new MediaRecorder(combinedStream, { 
         mimeType,
