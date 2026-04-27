@@ -137,7 +137,10 @@ export function SettingsPage() {
           Need technical support? Contact us at <span style={{ color: 'var(--accent-light)' }}>support@screencast.ai</span>
         </p>
       </div>
+      </div>
     </div>
   )
 }
+
+
 
