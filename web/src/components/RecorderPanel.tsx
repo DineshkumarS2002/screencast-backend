@@ -61,7 +61,7 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
   }
   const status = statusConfig[rec.state]
 
-
+  const isSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
   const handleStart = async () => {
@@ -220,7 +220,16 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
 
         {/* Primary record controls */}
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.25rem' }}>
-          {isIdle && (
+          {!isSupported ? (
+            <div style={{ 
+              padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', 
+              borderRadius: '12px', textAlign: 'center', color: '#fca5a5', fontSize: '0.9rem', width: '100%' 
+            }}>
+              <Monitor size={24} style={{ margin: '0 auto 0.5rem', opacity: 0.8 }} />
+              <strong>Unsupported Device</strong>
+              <p style={{ marginTop: '0.4rem', opacity: 0.9 }}>Screen recording requires a desktop browser. Please open this app on a PC or Mac (Chrome, Edge, or Safari) to start recording.</p>
+            </div>
+          ) : isIdle && (
             <button id="btn-start-record" className="btn btn-primary" onClick={handleStart} style={{ padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', boxShadow: '0 0 20px var(--accent-glow)' }}>
               <Circle size={18} fill="currentColor" />
               Start Recording Session
