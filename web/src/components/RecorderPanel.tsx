@@ -7,7 +7,7 @@ import { useState } from 'react'
 import {
   Circle, Square, Pause, Play, Download, Upload,
   Mic, MicOff, Camera, CameraOff, Monitor, RotateCcw,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, Video
 } from 'lucide-react'
 import { useRecorder, type RecorderOptions } from '../hooks/useRecorder'
 import { videoApi } from '../api/endpoints'
