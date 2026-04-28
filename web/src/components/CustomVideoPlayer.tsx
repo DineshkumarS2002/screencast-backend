@@ -114,7 +114,17 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         preload="metadata"
         onClick={togglePlay}
         onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
+        onLoadedMetadata={() => {
+          if (videoRef.current) setDuration(videoRef.current.duration)
+        }}
+        onDurationChange={() => {
+          if (videoRef.current) setDuration(videoRef.current.duration)
+        }}
+        onPlay={() => {
+          if (videoRef.current && (!duration || duration === 0)) {
+            setDuration(videoRef.current.duration)
+          }
+        }}
         onEnded={() => setPlaying(false)}
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
