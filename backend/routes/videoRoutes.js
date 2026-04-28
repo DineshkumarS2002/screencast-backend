@@ -6,10 +6,10 @@ const fs = require('fs')
 const Video = require('../models/Video')
 const { protect } = require('../middleware/auth')
 
-// Ensure uploads directory exists
-const uploadDir = 'uploads'
+// Senior approach: Use absolute path for uploads directory
+const uploadDir = path.join(__dirname, '..', 'uploads')
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir)
+  fs.mkdirSync(uploadDir, { recursive: true })
 }
 
 // Multer Disk Storage
