@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { Play, Pause, Download, Upload, Settings, SkipBack, SkipForward } from 'lucide-react'
+import { Play, Pause, Download, Volume2, VolumeX, Maximize2, SkipBack, SkipForward, Settings } from 'lucide-react'
 
-// Replace standard <video> with this custom player
 interface Props {
   src: string
   title?: string
@@ -18,216 +17,207 @@ function fmtTime(sec: number): string {
 }
 
 export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }: Props) {
-  // Force URL to be relative so it goes through the Vite proxy (solving COEP/CORP issues)
+  const [playing, setPlaying] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [volume, setVolume] = useState(1)
+  const [muted, setMuted] = useState(false)
+  const [showOverlay, setShowOverlay] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Force relative paths or handle absolute ones
   const sanitizeUrl = (url: string) => {
     if (!url) return ''
     if (url.startsWith('https://res.cloudinary.com')) return url
-    
-    // Strip backend host so the URL becomes relative (e.g. /uploads/file.webm)
-    // Works in dev (Vite proxy) and production (Netlify proxy → Render)
-    const hosts = [
-      'http://localhost:8000',
-      'http://127.0.0.1:8000',
-      'https://screencast-backend-1.onrender.com', // Secure
-      'http://screencast-backend-1.onrender.com',  // Insecure (fallback)
-    ]
-    for (const host of hosts) {
-      if (url.startsWith(host)) return url.slice(host.length)
-    }
+    const hosts = ['http://localhost:8000', 'http://127.0.0.1:8000', 'https://screencast-backend-1.onrender.com', 'http://screencast-backend-1.onrender.com']
+    for (const host of hosts) { if (url.startsWith(host)) return url.slice(host.length) }
     return url
   }
 
-  const videoSrc = sanitizeUrl(src)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [isPlaying, setIsPlaying] = useState(autoPlay || false)
-  const [progress, setProgress] = useState(0)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [playbackRate, setPlaybackRate] = useState(1)
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false)
-
-  useEffect(() => {
-    let active = true
-    if (autoPlay && videoRef.current) {
-      const playPromise = videoRef.current.play()
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          if (active && error.name !== 'AbortError') {
-            setIsPlaying(false)
-          }
-        })
-      }
-    }
-    return () => { active = false }
-  }, [autoPlay, videoSrc])
-
   const togglePlay = () => {
     if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause()
-      } else {
-        const playPromise = videoRef.current.play()
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            setIsPlaying(false)
-          })
-        }
-      }
-      setIsPlaying(!isPlaying)
+      if (playing) videoRef.current.pause()
+      else videoRef.current.play()
+      setPlaying(!playing)
+      setShowOverlay(true)
+      setTimeout(() => setShowOverlay(false), 500)
     }
   }
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
+      const p = (videoRef.current.currentTime / videoRef.current.duration) * 100
+      setProgress(p)
       setCurrentTime(videoRef.current.currentTime)
-      setDuration(videoRef.current.duration || 0)
-      if (videoRef.current.duration > 0) {
-        setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100)
-      }
     }
   }
 
-  const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const manualChange = Number(e.target.value)
-    if (videoRef.current && isFinite(duration) && duration > 0) {
-      const seekTime = (manualChange / 100) * duration
-      if (isFinite(seekTime)) {
-        videoRef.current.currentTime = seekTime
-        setProgress(manualChange)
-      }
-    }
-  }
-
-  const skip = (seconds: number) => {
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (videoRef.current) {
-      videoRef.current.currentTime = Math.max(0, Math.min(videoRef.current.duration, videoRef.current.currentTime + seconds))
+      const time = (parseFloat(e.target.value) / 100) * videoRef.current.duration
+      videoRef.current.currentTime = time
+      setProgress(parseFloat(e.target.value))
     }
+  }
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !muted
+      setMuted(!muted)
+    }
+  }
+
+  const toggleFullscreen = () => {
+    if (containerRef.current?.requestFullscreen) containerRef.current.requestFullscreen()
   }
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (document.activeElement?.tagName === 'INPUT') return
-      
-      switch (e.key) {
-        case ' ':
-          e.preventDefault()
-          togglePlay()
-          break
-        case 'ArrowLeft':
-          skip(-10)
-          break
-        case 'ArrowRight':
-          skip(10)
-          break
-      }
+    if (autoPlay && videoRef.current) {
+      videoRef.current.play().catch(() => {})
+      setPlaying(true)
     }
+  }, [autoPlay, src])
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isPlaying]) // Re-bind if need access to state, but refs are better here
-
-  const changeSpeed = (rate: number) => {
-    if (videoRef.current) {
-      videoRef.current.playbackRate = rate
-      setPlaybackRate(rate)
-      setShowSpeedMenu(false)
-    }
-  }
+  const safeSrc = sanitizeUrl(src)
 
   return (
-    <div style={{ position: 'relative', width: '100%', background: '#000', borderRadius: '10px', overflow: 'hidden' }}>
+    <div 
+      ref={containerRef}
+      className="custom-player-container"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        position: 'relative',
+        width: '100%',
+        backgroundColor: '#000',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+        aspectRatio: '16/9'
+      }}
+    >
       <video
         ref={videoRef}
-        src={videoSrc}
-        crossOrigin="anonymous"
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={() => setIsPlaying(false)}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        style={{ width: '100%', display: 'block', maxHeight: '400px', cursor: 'pointer' }}
+        src={safeSrc}
+        className="w-full h-full cursor-pointer"
         onClick={togglePlay}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
+        onEnded={() => setPlaying(false)}
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
 
-      {/* Title overlay — top-left, shown only when title is provided */}
-      {title && (
+      {/* --- YouTube Style Big Center Play Button Overlay --- */}
+      <div 
+        onClick={togglePlay}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: showOverlay ? 'rgba(0,0,0,0.1)' : 'transparent',
+          transition: 'all 0.3s ease',
+          pointerEvents: isHovered || !playing ? 'auto' : 'none',
+          opacity: (isHovered || !playing) ? 1 : 0
+        }}
+      >
         <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0,
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.65), transparent)',
-          padding: '0.6rem 1rem',
-          color: '#fff', fontSize: '0.85rem', fontWeight: 600,
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          pointerEvents: 'none',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          borderRadius: '50%',
+          padding: '20px',
+          transform: showOverlay ? 'scale(1.2)' : 'scale(1)',
+          transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+          border: '2px solid rgba(255,255,255,0.1)'
         }}>
-          {title}
+          {playing ? (
+            <Pause size={48} color="white" fill="white" />
+          ) : (
+            <Play size={48} color="white" fill="white" style={{ marginLeft: '4px' }} />
+          )}
         </div>
-      )}
-      
-      {/* Custom Control Bar */}
+      </div>
+
+      {/* --- Bottom Controls Bar --- */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, 
-        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
-        padding: '0.5rem 1rem', display: 'flex', flexDirection: 'column', gap: '6px'
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: '20px',
+        paddingTop: '40px',
+        background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+        opacity: (isHovered || !playing) ? 1 : 0,
+        transition: 'opacity 0.3s ease',
+        pointerEvents: (isHovered || !playing) ? 'auto' : 'none'
       }}>
-        
-        {/* Progress Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '10px' }}>
-          <span style={{ color: '#fff', fontSize: '0.8rem', minWidth: '40px' }}>{fmtTime(currentTime)}</span>
-          <input 
-            type="range" min="0" max="100" value={progress}
-            onChange={handleProgressChange}
-            style={{ flex: 1, cursor: 'pointer', height: '4px' }}
+        {/* YouTube Style Seek Bar */}
+        <div style={{ position: 'relative', marginBottom: '12px' }}>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={progress}
+            onChange={handleSeek}
+            style={{
+              width: '100%',
+              height: '4px',
+              borderRadius: '2px',
+              appearance: 'none',
+              background: `linear-gradient(to right, #ff0000 ${progress}%, rgba(255,255,255,0.2) ${progress}%)`,
+              cursor: 'pointer',
+              outline: 'none'
+            }}
           />
-          <span style={{ color: '#fff', fontSize: '0.8rem', minWidth: '40px' }}>{fmtTime(duration)}</span>
         </div>
 
-        {/* Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <button onClick={togglePlay} className="btn-icon" style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>
-              {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-            </button>
-            <button onClick={() => skip(-10)} className="btn-icon" title="Back 10s" style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>
-              <SkipBack size={18} />
-            </button>
-            <button onClick={() => skip(10)} className="btn-icon" title="Forward 10s" style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>
-              <SkipForward size={18} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', padding: 0 }}>
+              {playing ? <Pause size={24} fill="white" /> : <Play size={24} fill="white" />}
             </button>
 
-            {/* Playback Speed Menu */}
-            <div style={{ position: 'relative' }}>
-              <button 
-                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                <Settings size={16} /> {playbackRate}x
-              </button>
-              {showSpeedMenu && (
-                <div style={{ position: 'absolute', bottom: '100%', left: 0, background: '#1e1e1e', borderRadius: '8px', padding: '0.5rem', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {[0.5, 1, 1.25, 1.5, 2].map(rate => (
-                    <button 
-                      key={rate} 
-                      onClick={() => changeSpeed(rate)}
-                      style={{ background: rate === playbackRate ? 'var(--accent)' : 'transparent', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '0.8rem' }}
-                    >
-                      {rate}x Speed
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <button onClick={toggleMute} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', padding: 0 }}>
+              {muted || volume === 0 ? <VolumeX size={24} /> : <Volume2 size={24} />}
+            </button>
+
+            <span style={{ color: 'white', fontSize: '13px', fontWeight: 500, fontFamily: 'monospace' }}>
+              {fmtTime(currentTime)} / {fmtTime(duration)}
+            </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            {/* Download Option as requested in 2nd image */}
             {onDownload && (
-              <button onClick={onDownload} title="Download" style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>
-                <Download size={18} />
+              <button 
+                onClick={(e) => { e.stopPropagation(); onDownload(); }} 
+                title="Download Video"
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  color: 'white', 
+                  padding: '5px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s'
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)')}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
+                <Download size={22} />
               </button>
             )}
-            {onUpload && (
-              <button onClick={onUpload} title="Upload" style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>
-                <Upload size={18} />
-              </button>
-            )}
+
+            <button onClick={toggleFullscreen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', padding: 0 }}>
+              <Maximize2 size={22} />
+            </button>
           </div>
         </div>
       </div>
