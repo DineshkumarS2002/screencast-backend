@@ -11,17 +11,23 @@ const app = express()
 // ─── CORS ────────────────────────────────────────────────────────────────────
 // Allow:  local dev (localhost:5173 / localhost:3000)
 //         Netlify production (set FRONTEND_URL in Render env vars)
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  process.env.FRONTEND_URL,          // e.g. https://your-app.netlify.app
-].filter(Boolean)
-
 app.use(cors({
   origin: (origin, callback) => {
     // Allow server-to-server / curl / Postman (no origin header)
     if (!origin) return callback(null, true)
-    if (allowedOrigins.includes(origin)) return callback(null, true)
+    
+    // Check if origin matches localhost or the FRONTEND_URL
+    const frontend = process.env.FRONTEND_URL
+    if (
+      origin.includes('localhost') || 
+      origin.includes('127.0.0.1') || 
+      (frontend && origin === frontend) ||
+      (frontend && origin === frontend.replace(/\/$/, '')) // handle trailing slash
+    ) {
+      return callback(null, true)
+    }
+    
+    console.warn(`⚠️ CORS blocked for origin: ${origin}. Allowed FRONTEND_URL: ${frontend}`)
     callback(new Error(`CORS blocked for origin: ${origin}`))
   },
   credentials: true,
