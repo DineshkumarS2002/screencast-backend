@@ -21,6 +21,8 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
   // Force URL to be relative so it goes through the Vite proxy (solving COEP/CORP issues)
   const sanitizeUrl = (url: string) => {
     if (!url) return ''
+    if (url.startsWith('https://res.cloudinary.com')) return url
+    
     // Strip backend host so the URL becomes relative (e.g. /uploads/file.webm)
     // Works in dev (Vite proxy) and production (Netlify proxy → Render)
     const hosts = [

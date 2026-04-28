@@ -76,6 +76,8 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
 
   const sanitizeUrl = (url: string) => {
     if (!url) return ''
+    if (url.startsWith('https://res.cloudinary.com')) return url // Cloudinary is persistent
+    
     // Strip backend host so the URL becomes relative (e.g. /uploads/file.webm)
     // Works in dev (Vite proxy) and production (Netlify proxy → Render)
     const hosts = [
