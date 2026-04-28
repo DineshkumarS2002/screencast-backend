@@ -3,51 +3,49 @@ const express = require('express')
 const cors = require('cors')
 const connectDB = require('./config/db')
 
-// Initialize DB
-connectDB()
-
 const app = express()
 
-// ─── CORS ────────────────────────────────────────────────────────────────────
-// Allow:  local dev (localhost:5173 / localhost:3000)
-//         Netlify production (set FRONTEND_URL in Render env vars)
+// ─── Database Connection ──────────────────────────────────────────────────────
+connectDB()
+
+// ─── Middleware ───────────────────────────────────────────────────────────────
+// Senior setup: Explicitly allow production domain and localhost
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://screencast-screen-recorder.netlify.app'
+]
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow server-to-server / curl / Postman (no origin header)
+    // Allow non-browser requests (Postman, etc)
     if (!origin) return callback(null, true)
-    
-    // Check if origin matches localhost or the FRONTEND_URL
-    const frontend = process.env.FRONTEND_URL
-    if (
-      origin.includes('localhost') || 
-      origin.includes('127.0.0.1') || 
-      (frontend && origin === frontend) ||
-      (frontend && origin === frontend.replace(/\/$/, '')) // handle trailing slash
-    ) {
-      return callback(null, true)
-    }
-    
-    console.warn(`⚠️ CORS blocked for origin: ${origin}. Allowed FRONTEND_URL: ${frontend}`)
-    callback(new Error(`CORS blocked for origin: ${origin}`))
+    if (allowedOrigins.includes(origin)) return callback(null, true)
+    return callback(new Error(`CORS blocked for origin: ${origin}`))
   },
-  credentials: true,
+  credentials: true
 }))
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use('/uploads', express.static('uploads'))
 
-// ─── Health check ─────────────────────────────────────────────────────────────
-app.get('/', (req, res) => {
-  res.json({ status: 'online', message: 'ScreenCast Node.js API' })
-})
+// Serve static uploads
+app.use('/uploads', express.static('uploads'))
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/authRoutes'))
-app.use('/api',      require('./routes/videoRoutes'))
+app.use('/api', require('./routes/videoRoutes'))
 
-// ─── Start ────────────────────────────────────────────────────────────────────
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'online', 
+    message: 'ScreenCast Pro API',
+    version: '1.0.0'
+  })
+})
+
 const PORT = process.env.PORT || 8000
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`)
+  console.log(`🚀 Senior Backend running on port ${PORT}`)
 })

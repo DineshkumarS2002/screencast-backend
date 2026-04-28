@@ -1,35 +1,37 @@
 import axios from 'axios'
 
 /**
- * Axios instance — MERN stack, Netlify + Render deployment.
- *
- * How URLs work:
- *   Local dev  → Vite proxy  (/api → localhost:8000)
- *   Production → Netlify proxy (/api → Render backend via _redirects)
- *
- * In both cases the browser always calls relative '/api' — no hardcoded
- * backend URL needed, and CORS is never an issue.
+ * Senior API Client Configuration
+ * 
+ * Strategy: 
+ *   We use relative paths ('/api') to leverage the Netlify/Vite proxy.
+ *   This avoids CORS issues and ensures the browser treats the API as same-origin.
  */
 
 const api = axios.create({
   baseURL: '/api',
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+  },
 })
 
-// Attach JWT token to every request
+// Request interceptor: attach token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
   return config
 }, (error) => Promise.reject(error))
 
-// On 401 → clear token and redirect to login
+// Response interceptor: global error handling
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    // On 401 (Unauthorized) -> clear session
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
-      if (!window.location.pathname.startsWith('/login') &&
+      if (!window.location.pathname.startsWith('/login') && 
           !window.location.pathname.startsWith('/register')) {
         window.location.href = '/login'
       }
