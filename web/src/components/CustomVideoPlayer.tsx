@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { Play, Pause, Download, Volume2, VolumeX, Maximize2 } from 'lucide-react'
+import { Play, Pause, Download, Volume2, VolumeX, Maximize2, Upload } from 'lucide-react'
 
 interface Props {
   src: string
   title?: string
   onDownload?: () => void
+  onUpload?: () => void
   autoPlay?: boolean
 }
 
@@ -15,7 +16,7 @@ function fmtTime(sec: number): string {
   return `${m}:${s}`
 }
 
-export function CustomVideoPlayer({ src, title, onDownload, autoPlay }: Props) {
+export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }: Props) {
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -108,7 +109,6 @@ export function CustomVideoPlayer({ src, title, onDownload, autoPlay }: Props) {
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
 
-      {/* --- Video Title Overlay (YouTube Style) --- */}
       <div style={{
         position: 'absolute',
         top: 0,
@@ -120,7 +120,7 @@ export function CustomVideoPlayer({ src, title, onDownload, autoPlay }: Props) {
         fontSize: '18px',
         fontWeight: 600,
         pointerEvents: 'none',
-        opacity: isHovered || !playing ? 1 : 0,
+        opacity: (isHovered || !playing) && title ? 1 : 0,
         transition: 'opacity 0.3s'
       }}>
         {title}
@@ -194,6 +194,15 @@ export function CustomVideoPlayer({ src, title, onDownload, autoPlay }: Props) {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            {onUpload && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onUpload(); }} 
+                title="Save to Library"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}
+              >
+                <Upload size={22} />
+              </button>
+            )}
             {onDownload && (
               <button 
                 onClick={(e) => { e.stopPropagation(); onDownload(); }} 
