@@ -102,6 +102,7 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         ref={videoRef}
         src={safeSrc}
         className="w-full h-full cursor-pointer"
+        preload="metadata"
         onClick={togglePlay}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}

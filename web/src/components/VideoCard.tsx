@@ -22,9 +22,10 @@ function fmtDuration(sec: number): string {
   return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`
 }
 
-function fmtBytes(b: number): string {
-  if (b < 1048576) return `${(b / 1024).toFixed(1)} KB`
-  return `${(b / 1048576).toFixed(1)} MB`
+function fmtBytes(bytes: number): string {
+  if (!bytes || isNaN(bytes)) return '0 MB'
+  const mb = bytes / (1024 * 1024)
+  return `${mb.toFixed(1)} MB`
 }
 
 function fmtDate(iso: string): string {
