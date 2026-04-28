@@ -40,7 +40,8 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
   const [deleting, setDeleting]       = useState(false)
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}${sanitizeUrl(video.file_url)}`
+    const url = sanitizeUrl(video.file_url)
+    const shareUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`
     
     if (navigator.share) {
       try {
