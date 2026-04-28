@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { Play, Pause, Download, Volume2, VolumeX, Maximize2, SkipBack, SkipForward, Settings } from 'lucide-react'
+import { Play, Pause, Download, Volume2, VolumeX, Maximize2 } from 'lucide-react'
 
 interface Props {
   src: string
   title?: string
   onDownload?: () => void
-  onUpload?: () => void
   autoPlay?: boolean
 }
 
@@ -16,12 +15,11 @@ function fmtTime(sec: number): string {
   return `${m}:${s}`
 }
 
-export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }: Props) {
+export function CustomVideoPlayer({ src, title, onDownload, autoPlay }: Props) {
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
-  const [volume, setVolume] = useState(1)
   const [muted, setMuted] = useState(false)
   const [showOverlay, setShowOverlay] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -29,7 +27,6 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Force relative paths or handle absolute ones
   const sanitizeUrl = (url: string) => {
     if (!url) return ''
     if (url.startsWith('https://res.cloudinary.com')) return url
@@ -111,7 +108,24 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
 
-      {/* --- YouTube Style Big Center Play Button Overlay --- */}
+      {/* --- Video Title Overlay (YouTube Style) --- */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        padding: '30px 20px 60px 20px',
+        background: 'linear-gradient(rgba(0,0,0,0.7), transparent)',
+        color: 'white',
+        fontSize: '18px',
+        fontWeight: 600,
+        pointerEvents: 'none',
+        opacity: isHovered || !playing ? 1 : 0,
+        transition: 'opacity 0.3s'
+      }}>
+        {title}
+      </div>
+
       <div 
         onClick={togglePlay}
         style={{
@@ -134,28 +148,20 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
           transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
           border: '2px solid rgba(255,255,255,0.1)'
         }}>
-          {playing ? (
-            <Pause size={48} color="white" fill="white" />
-          ) : (
-            <Play size={48} color="white" fill="white" style={{ marginLeft: '4px' }} />
-          )}
+          {playing ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" style={{ marginLeft: '4px' }} />}
         </div>
       </div>
 
-      {/* --- Bottom Controls Bar --- */}
       <div style={{
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
         padding: '20px',
-        paddingTop: '40px',
         background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
-        opacity: (isHovered || !playing) ? 1 : 0,
-        transition: 'opacity 0.3s ease',
-        pointerEvents: (isHovered || !playing) ? 'auto' : 'none'
+        opacity: isHovered || !playing ? 1 : 0,
+        transition: 'opacity 0.3s'
       }}>
-        {/* YouTube Style Seek Bar */}
         <div style={{ position: 'relative', marginBottom: '12px' }}>
           <input
             type="range"
@@ -177,45 +183,27 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', padding: 0 }}>
+            <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
               {playing ? <Pause size={24} fill="white" /> : <Play size={24} fill="white" />}
             </button>
-
-            <button onClick={toggleMute} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', padding: 0 }}>
-              {muted || volume === 0 ? <VolumeX size={24} /> : <Volume2 size={24} />}
+            <button onClick={toggleMute} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+              {muted ? <VolumeX size={24} /> : <Volume2 size={24} />}
             </button>
-
-            <span style={{ color: 'white', fontSize: '13px', fontWeight: 500, fontFamily: 'monospace' }}>
+            <span style={{ color: 'white', fontSize: '13px', fontFamily: 'monospace' }}>
               {fmtTime(currentTime)} / {fmtTime(duration)}
             </span>
           </div>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            {/* Download Option as requested in 2nd image */}
             {onDownload && (
               <button 
                 onClick={(e) => { e.stopPropagation(); onDownload(); }} 
-                title="Download Video"
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  cursor: 'pointer', 
-                  color: 'white', 
-                  padding: '5px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s'
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)')}
-                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                title="Download"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}
               >
                 <Download size={22} />
               </button>
             )}
-
-            <button onClick={toggleFullscreen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', padding: 0 }}>
+            <button onClick={toggleFullscreen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
               <Maximize2 size={22} />
             </button>
           </div>
