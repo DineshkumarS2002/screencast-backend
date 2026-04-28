@@ -42,14 +42,11 @@ router.post('/upload', protect, upload.fields([
     const videoFile = req.files.file[0]
     const thumbnailFile = req.files.thumbnail ? req.files.thumbnail[0] : null
 
-    // Generate full URL for the video
-    const protocol = req.protocol
-    const host = req.get('host')
-    const file_url = `${protocol}://${host}/uploads/${videoFile.filename}`
-    
+    // Senior approach: store relative paths to avoid http/https protocol issues
+    const file_url = `/uploads/${videoFile.filename}`
     let thumbnail_url = null
     if (thumbnailFile) {
-      thumbnail_url = `${protocol}://${host}/uploads/${thumbnailFile.filename}`
+      thumbnail_url = `/uploads/${thumbnailFile.filename}`
     }
 
     // Save to MongoDB

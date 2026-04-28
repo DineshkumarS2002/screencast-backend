@@ -81,7 +81,8 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
     const hosts = [
       'http://localhost:8000',
       'http://127.0.0.1:8000',
-      'https://screencast-backend-1.onrender.com',  // Your Render backend
+      'https://screencast-backend-1.onrender.com', // Secure
+      'http://screencast-backend-1.onrender.com',  // Insecure (fallback)
     ]
     for (const host of hosts) {
       if (url.startsWith(host)) return url.slice(host.length)
@@ -89,14 +90,16 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
     return url
   }
 
-  const handleDownload = () => {
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card click
+    const url = sanitizeUrl(video.file_url)
     const a = document.createElement('a')
-    a.href  = sanitizeUrl(video.file_url)
-    // Ensure clean filename: remove special chars and add extension
+    a.href = url
     const cleanTitle = video.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()
     a.download = `${cleanTitle}.webm`
-    a.target = '_blank'
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
   }
 
   return (

@@ -26,7 +26,8 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
     const hosts = [
       'http://localhost:8000',
       'http://127.0.0.1:8000',
-      'https://screencast-backend-1.onrender.com', // Your Render backend
+      'https://screencast-backend-1.onrender.com', // Secure
+      'http://screencast-backend-1.onrender.com',  // Insecure (fallback)
     ]
     for (const host of hosts) {
       if (url.startsWith(host)) return url.slice(host.length)
