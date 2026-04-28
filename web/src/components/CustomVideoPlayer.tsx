@@ -21,6 +21,7 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
+  const [volume, setVolume] = useState(1)
   const [muted, setMuted] = useState(false)
   const [showOverlay, setShowOverlay] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -118,7 +119,7 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
 
-      {/* Title Overlay */}
+      {/* --- Video Title --- */}
       <div style={{
         position: 'absolute',
         top: 0,
@@ -127,13 +128,14 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         padding: '20px',
         background: 'linear-gradient(rgba(0,0,0,0.7), transparent)',
         color: 'white',
+        fontWeight: 600,
         opacity: isHovered || !playing ? 1 : 0,
-        transition: 'opacity 0.3s'
+        transition: 'opacity 0.3s',
+        pointerEvents: 'none'
       }}>
         {title}
       </div>
 
-      {/* Center Big Play Icon */}
       <div 
         onClick={togglePlay}
         style={{
@@ -156,6 +158,7 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         </div>
       </div>
 
+      {/* --- Control Bar --- */}
       <div style={{
         position: 'absolute',
         bottom: 0,
@@ -166,7 +169,6 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         opacity: isHovered || !playing ? 1 : 0,
         transition: 'opacity 0.3s'
       }}>
-        {/* Seek Bar at Top of Controls */}
         <div style={{ position: 'relative', marginBottom: '10px' }}>
           <input
             type="range"
@@ -188,7 +190,6 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {/* Classic Media Player Control Group */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
               {playing ? <Pause size={20} fill="white" /> : <Play size={20} fill="white" />}
@@ -207,13 +208,32 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button onClick={toggleMute} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
-                {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+              <button onClick={toggleMute} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', display: 'flex' }}>
+                {muted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
               </button>
-              {/* Triangle-ish Volume Visual indicator (simplified as bar for now) */}
-              <div style={{ width: '60px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', overflow: 'hidden' }}>
-                <div style={{ width: muted ? '0%' : '70%', height: '100%', background: '#4ade80' }}></div>
-              </div>
+              
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={muted ? 0 : volume}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value)
+                  setVolume(val)
+                  if(videoRef.current) videoRef.current.volume = val
+                  if(val > 0) setMuted(false)
+                }}
+                style={{
+                  width: '60px',
+                  height: '4px',
+                  appearance: 'none',
+                  borderRadius: '2px',
+                  background: `linear-gradient(to right, #4ade80 ${(muted ? 0 : volume) * 100}%, rgba(255,255,255,0.2) 0%)`,
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
+              />
             </div>
 
             {onUpload && (
