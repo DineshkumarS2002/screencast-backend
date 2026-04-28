@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Play, Pause, Download, Volume2, VolumeX, Maximize2, Upload } from 'lucide-react'
+import { Play, Pause, Download, Volume2, VolumeX, Maximize2, Upload, Square, RotateCcw } from 'lucide-react'
 
 interface Props {
   src: string
@@ -43,6 +43,14 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
       setPlaying(!playing)
       setShowOverlay(true)
       setTimeout(() => setShowOverlay(false), 500)
+    }
+  }
+
+  const stopVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
+      setPlaying(false)
     }
   }
 
@@ -94,7 +102,7 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         backgroundColor: '#000',
         borderRadius: '12px',
         overflow: 'hidden',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
         aspectRatio: '16/9'
       }}
     >
@@ -110,23 +118,22 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
 
+      {/* Title Overlay */}
       <div style={{
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        padding: '30px 20px 60px 20px',
+        padding: '20px',
         background: 'linear-gradient(rgba(0,0,0,0.7), transparent)',
         color: 'white',
-        fontSize: '18px',
-        fontWeight: 600,
-        pointerEvents: 'none',
-        opacity: (isHovered || !playing) && title ? 1 : 0,
+        opacity: isHovered || !playing ? 1 : 0,
         transition: 'opacity 0.3s'
       }}>
         {title}
       </div>
 
+      {/* Center Big Play Icon */}
       <div 
         onClick={togglePlay}
         style={{
@@ -135,21 +142,17 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: showOverlay ? 'rgba(0,0,0,0.1)' : 'transparent',
-          transition: 'all 0.3s ease',
-          pointerEvents: isHovered || !playing ? 'auto' : 'none',
-          opacity: (isHovered || !playing) ? 1 : 0
+          opacity: showOverlay ? 1 : 0,
+          transition: 'opacity 0.5s',
+          pointerEvents: 'none'
         }}
       >
         <div style={{
           backgroundColor: 'rgba(0,0,0,0.6)',
           borderRadius: '50%',
-          padding: '20px',
-          transform: showOverlay ? 'scale(1.2)' : 'scale(1)',
-          transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-          border: '2px solid rgba(255,255,255,0.1)'
+          padding: '20px'
         }}>
-          {playing ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" style={{ marginLeft: '4px' }} />}
+          {playing ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" />}
         </div>
       </div>
 
@@ -158,16 +161,18 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         bottom: 0,
         left: 0,
         right: 0,
-        padding: '20px',
-        background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+        padding: '10px 15px 15px 15px',
+        background: 'linear-gradient(transparent, rgba(0,0,0,0.9))',
         opacity: isHovered || !playing ? 1 : 0,
         transition: 'opacity 0.3s'
       }}>
-        <div style={{ position: 'relative', marginBottom: '12px' }}>
+        {/* Seek Bar at Top of Controls */}
+        <div style={{ position: 'relative', marginBottom: '10px' }}>
           <input
             type="range"
             min="0"
             max="100"
+            step="0.1"
             value={progress}
             onChange={handleSeek}
             style={{
@@ -183,38 +188,46 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          {/* Classic Media Player Control Group */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
-              {playing ? <Pause size={24} fill="white" /> : <Play size={24} fill="white" />}
+              {playing ? <Pause size={20} fill="white" /> : <Play size={20} fill="white" />}
             </button>
-            <button onClick={toggleMute} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
-              {muted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+            <button onClick={stopVideo} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+              <Square size={18} fill="white" />
             </button>
-            <span style={{ color: 'white', fontSize: '13px', fontFamily: 'monospace' }}>
+            <button onClick={() => { if(videoRef.current) videoRef.current.currentTime -= 10 }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+              <RotateCcw size={18} />
+            </button>
+
+            <span style={{ color: 'white', fontSize: '13px', fontFamily: 'monospace', fontWeight: 600 }}>
               {fmtTime(currentTime)} / {fmtTime(duration)}
             </span>
           </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={toggleMute} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+                {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+              </button>
+              {/* Triangle-ish Volume Visual indicator (simplified as bar for now) */}
+              <div style={{ width: '60px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', overflow: 'hidden' }}>
+                <div style={{ width: muted ? '0%' : '70%', height: '100%', background: '#4ade80' }}></div>
+              </div>
+            </div>
+
             {onUpload && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); onUpload(); }} 
-                title="Save to Library"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}
-              >
-                <Upload size={22} />
+              <button onClick={(e) => {e.stopPropagation(); onUpload();}} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+                <Upload size={18} />
               </button>
             )}
             {onDownload && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); onDownload(); }} 
-                title="Download"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}
-              >
-                <Download size={22} />
+              <button onClick={(e) => {e.stopPropagation(); onDownload();}} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+                <Download size={18} />
               </button>
             )}
             <button onClick={toggleFullscreen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
-              <Maximize2 size={22} />
+              <Maximize2 size={20} />
             </button>
           </div>
         </div>
