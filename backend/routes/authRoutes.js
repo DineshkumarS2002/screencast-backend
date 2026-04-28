@@ -31,6 +31,7 @@ router.post('/register', async (req, res) => {
       })
     }
   } catch (error) {
+    console.error('Registration error:', error)
     res.status(400).json({ message: error.message })
   }
 })
@@ -52,6 +53,7 @@ router.post('/login', async (req, res) => {
       res.status(401).json({ message: 'Invalid username or password' })
     }
   } catch (error) {
+    console.error('Login error:', error)
     res.status(500).json({ message: error.message })
   }
 })
