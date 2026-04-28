@@ -92,16 +92,37 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
     return url
   }
 
-  const handleDownload = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation() // Prevent card click if event exists
+  const handleDownload = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation() // Prevent card click
     const url = sanitizeUrl(video.file_url)
-    const a = document.createElement('a')
-    a.href = url
-    const cleanTitle = video.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()
-    a.download = `${cleanTitle}.webm`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
+    
+    try {
+      onToast('Preparing download...', 'info')
+      
+      // Fetch the file as a blob to bypass CORS/Same-origin download restrictions
+      const response = await fetch(url)
+      if (!response.ok) throw new Error('Network response was not ok')
+      
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+      
+      const a = document.createElement('a')
+      a.href = blobUrl
+      const cleanTitle = video.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+      a.download = `${cleanTitle}.webm`
+      document.body.appendChild(a)
+      a.click()
+      
+      // Cleanup
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(blobUrl)
+      onToast('Download started!', 'success')
+    } catch (error) {
+      console.error('Download error:', error)
+      // Fallback: try direct link if blob fails
+      window.open(url, '_blank')
+      onToast('Direct link opened (persistent download failed)', 'error')
+    }
   }
 
   return (
