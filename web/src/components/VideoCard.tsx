@@ -90,8 +90,8 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
     return url
   }
 
-  const handleDownload = (e: React.MouseEvent) => {
-    e.stopPropagation() // Prevent card click
+  const handleDownload = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation() // Prevent card click if event exists
     const url = sanitizeUrl(video.file_url)
     const a = document.createElement('a')
     a.href = url
