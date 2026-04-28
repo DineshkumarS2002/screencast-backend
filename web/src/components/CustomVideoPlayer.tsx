@@ -21,9 +21,15 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
   // Force URL to be relative so it goes through the Vite proxy (solving COEP/CORP issues)
   const sanitizeUrl = (url: string) => {
     if (!url) return ''
-    const hosts = ['http://localhost:8000', 'http://127.0.0.1:8000']
+    // Strip backend host so the URL becomes relative (e.g. /uploads/file.webm)
+    // Works in dev (Vite proxy) and production (Netlify proxy → Render)
+    const hosts = [
+      'http://localhost:8000',
+      'http://127.0.0.1:8000',
+      'https://screencast-backend-957x.onrender.com', // Render backend
+    ]
     for (const host of hosts) {
-      if (url.startsWith(host)) return url.replace(host, '')
+      if (url.startsWith(host)) return url.slice(host.length)
     }
     return url
   }

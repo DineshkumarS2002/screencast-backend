@@ -25,15 +25,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ─── On mount, try to restore session ──────────────────────────────────────
   useEffect(() => {
     const restore = async () => {
-      const token = localStorage.getItem('access_token')
+      const token = localStorage.getItem('token')
       if (!token) { setIsLoading(false); return }
       try {
         const res = await authApi.me()
         setUser(res.data)
       } catch {
         // Token expired / invalid — clear storage
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
+        localStorage.removeItem('token')
       } finally {
         setIsLoading(false)
       }
@@ -43,8 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (username: string, password: string) => {
     const res = await authApi.login(username, password)
-    localStorage.setItem('access_token',  res.data.access)
-    localStorage.setItem('refresh_token', res.data.refresh)
+    localStorage.setItem('token', res.data.token)
     setUser(res.data.user)
   }, [])
 
@@ -52,16 +50,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     username: string, email: string, password: string, password2: string
   ) => {
     const res = await authApi.register(username, email, password, password2)
-    localStorage.setItem('access_token',  res.data.access)
-    localStorage.setItem('refresh_token', res.data.refresh)
+    localStorage.setItem('token', res.data.token)
     setUser(res.data.user)
   }, [])
 
   const logout = useCallback(async () => {
-    const refresh = localStorage.getItem('refresh_token') ?? ''
-    try { await authApi.logout(refresh) } catch { /* ignore */ }
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
+    try { await authApi.logout() } catch { /* ignore */ }
+    localStorage.removeItem('token')
     setUser(null)
   }, [])
 

@@ -34,7 +34,7 @@ export function LibraryPage() {
     fetchVideos()
   }, [fetchVideos])
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string | number) => {
     try {
       await videoApi.delete(id)
       setVideos(prev => prev.filter(v => v.id !== id))

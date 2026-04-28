@@ -1,5 +1,6 @@
 /**
  * API methods for authentication and video operations.
+ * Cleaned up to remove Django trailing slashes and use standard MERN patterns.
  */
 
 import api from './client'
@@ -7,14 +8,14 @@ import api from './client'
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 export interface User {
-  id: number
+  id: string | number
   username: string
   email: string
 }
 
 export interface Video {
-  id: number
-  user: User
+  id: string | number
+  user: string | User
   title: string
   file_url: string
   thumbnail_url: string | null
@@ -26,8 +27,7 @@ export interface Video {
 }
 
 export interface AuthResponse {
-  access: string
-  refresh: string
+  token: string
   user: User
   message?: string
 }
@@ -36,22 +36,22 @@ export interface AuthResponse {
 
 export const authApi = {
   register: (username: string, email: string, password: string, password2: string) =>
-    api.post<AuthResponse>('/auth/register/', { username, email, password, password2 }),
+    api.post<AuthResponse>('/auth/register', { username, email, password, password2 }),
 
   login: (username: string, password: string) =>
-    api.post<AuthResponse>('/auth/login/', { username, password }),
+    api.post<AuthResponse>('/auth/login', { username, password }),
 
-  logout: (refresh: string) =>
-    api.post('/auth/logout/', { refresh }),
+  logout: () =>
+    api.post('/auth/logout'),
 
   me: () =>
-    api.get<User>('/auth/me/'),
+    api.get<User>('/auth/me'),
 
   updateProfile: (data: Partial<Pick<User, 'username' | 'email'>>) =>
-    api.put<User>('/auth/profile/', data),
+    api.put<User>('/auth/profile', data),
 
   changePassword: (old_password: string, new_password: string, confirm_password: string) =>
-    api.post('/auth/password/', { old_password, new_password, confirm_password }),
+    api.post('/auth/password', { old_password, new_password, confirm_password }),
 }
 
 // ─── Videos ─────────────────────────────────────────────────────────────────
@@ -59,10 +59,6 @@ export const authApi = {
 export const videoApi = {
   /**
    * Upload a video blob as multipart form data.
-   * @param blob       The recorded video Blob
-   * @param title      Optional title for the recording
-   * @param duration   Duration in seconds
-   * @param onProgress Upload progress callback (0–100)
    */
   upload: (
     blob: Blob,
@@ -81,7 +77,7 @@ export const videoApi = {
       form.append('thumbnail', thumbnail, 'thumb.jpg')
     }
 
-    return api.post<{ message: string; video: Video }>('/upload/', form, {
+    return api.post<{ message: string; video: Video }>('/upload', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: (evt) => {
         if (evt.total && onProgress) {
@@ -92,11 +88,11 @@ export const videoApi = {
   },
 
   list: () =>
-    api.get<{ results: Video[]; count: number }>('/videos/'),
+    api.get<{ results: Video[]; count: number }>('/videos'),
 
-  getById: (id: number) =>
-    api.get<Video>(`/videos/${id}/`),
+  getById: (id: string | number) =>
+    api.get<Video>(`/videos/${id}`),
 
-  delete: (id: number) =>
-    api.delete(`/videos/${id}/`),
+  delete: (id: string | number) =>
+    api.delete(`/videos/${id}`),
 }

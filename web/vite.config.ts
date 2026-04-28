@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
           target: apiTarget,
           changeOrigin: true,
         },
-        '/media': {
+        '/uploads': {
           target: apiTarget,
           changeOrigin: true,
         },

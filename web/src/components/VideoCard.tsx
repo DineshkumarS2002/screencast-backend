@@ -10,7 +10,7 @@ import { CustomVideoPlayer } from './CustomVideoPlayer'
 
 interface Props {
   video: Video
-  onDelete: (id: number) => void
+  onDelete: (id: string | number) => void
   onToast: (msg: string, type: 'success' | 'error' | 'info') => void
 }
 
@@ -76,10 +76,15 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
 
   const sanitizeUrl = (url: string) => {
     if (!url) return ''
-    // Convert absolute backend URLs to relative paths to work with Vite proxy
-    const hosts = ['http://localhost:8000', 'http://127.0.0.1:8000']
+    // Strip backend host so the URL becomes relative (e.g. /uploads/file.webm)
+    // Works in dev (Vite proxy) and production (Netlify proxy → Render)
+    const hosts = [
+      'http://localhost:8000',
+      'http://127.0.0.1:8000',
+      'https://screencast-backend-957x.onrender.com',  // Render backend
+    ]
     for (const host of hosts) {
-      if (url.startsWith(host)) return url.replace(host, '')
+      if (url.startsWith(host)) return url.slice(host.length)
     }
     return url
   }

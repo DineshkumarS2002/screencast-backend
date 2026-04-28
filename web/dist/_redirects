@@ -1,3 +1,9 @@
-/api/*  https://screencast-backend-957x.onrender.com/api/:splat  200
-/media/* https://screencast-backend-957x.onrender.com/media/:splat 200
-/*       /index.html                                               200
+# Netlify proxy — forwards API & uploads to Render backend
+# This avoids CORS entirely since requests appear same-origin to the browser.
+# Replace the backend URL below with your actual Render service URL.
+
+/api/*       https://screencast-backend-957x.onrender.com/api/:splat       200
+/uploads/*   https://screencast-backend-957x.onrender.com/uploads/:splat   200
+
+# SPA fallback — React Router page refresh fix
+/*           /index.html                                                     200

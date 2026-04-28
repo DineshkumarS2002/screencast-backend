@@ -1,6 +1,4 @@
 {
-    "python.defaultInterpreterPath": "backend\\venv_fix\\Scripts\\python.exe",
-    "python.analysis.extraPaths": [
-        "./backend"
-    ]
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
 }
