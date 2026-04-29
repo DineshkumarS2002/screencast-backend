@@ -1,16 +1,16 @@
-import { Routes, Route } from 'react-router-dom'
-import { Navbar } from './components/Navbar'
-import { HomePage } from './pages/HomePage'
-import { LoginPage } from './pages/LoginPage'
-import { RegisterPage } from './pages/RegisterPage'
-import { LibraryPage } from './pages/LibraryPage'
-import { SettingsPage } from './pages/SettingsPage'
-import { ProtectedRoute } from './components/ProtectedRoute'
-import './App.css'
+import { Routes, Route } from "react-router-dom";
+import { Navbar } from "./components/Navbar";
+import { HomePage } from "./pages/HomePage";
+import { LoginPage } from "./pages/LoginPage";
+import { RegisterPage } from "./pages/RegisterPage";
+import { LibraryPage } from "./pages/LibraryPage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import "./App.css";
 
 function App() {
   return (
-    <div className="flex-col" style={{ minHeight: '100vh' }}>
+    <div className="flex-col" style={{ minHeight: "100vh" }}>
       <Navbar />
       <Routes>
         {/* Public Routes */}
@@ -25,20 +25,29 @@ function App() {
         </Route>
 
         {/* Fallback */}
-        <Route path="*" element={<div className="container" style={{padding: '4rem 0'}}><h1>404</h1><p>Page not found.</p></div>} />
+        <Route
+          path="*"
+          element={
+            <div className="container" style={{ padding: "4rem 0" }}>
+              <h1>404</h1>
+              <p>Page not found.</p>
+            </div>
+          }
+        />
       </Routes>
 
-      <footer style={{ 
-        padding: '3rem 0', 
-        marginTop: 'auto', 
-        borderTop: '1px solid var(--glass-border)',
-        textAlign: 'center',
-        color: 'var(--text-muted)',
-        fontSize: '0.85rem'
-      }}>
-      </footer>
+      <footer
+        style={{
+          padding: "3rem 0",
+          marginTop: "auto",
+          borderTop: "1px solid var(--glass-border)",
+          textAlign: "center",
+          color: "var(--text-muted)",
+          fontSize: "0.85rem",
+        }}
+      ></footer>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

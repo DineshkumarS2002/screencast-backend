@@ -1,0 +1,5 @@
+{
+  "appId": "com.screencast.app",
+  "appName": "ScreenCast",
+  "webDir": "dist"
+}

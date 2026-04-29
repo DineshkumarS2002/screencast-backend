@@ -155,6 +155,7 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
             <img 
               src={sanitizeUrl(video.thumbnail_url)} 
               alt="" 
+              crossOrigin="anonymous"
               style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} 
             />
           ) : (
@@ -165,6 +166,7 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
 
           <video
             src={sanitizeUrl(video.file_url)}
+            crossOrigin="anonymous"
             style={{ 
               width: '100%', height: '100%', objectFit: 'cover', 
               position: 'absolute', inset: 0,

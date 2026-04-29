@@ -67,7 +67,15 @@ router.post('/login', async (req, res) => {
     }
 
     // Find user and include password field
+    console.log('[DEBUG_LOGIN] Attempting login for:', username)
     const user = await User.findOne({ username }).select('+password')
+    
+    if (!user) {
+      console.log('[DEBUG_LOGIN] User not found in DB')
+    } else {
+      const isMatch = await user.comparePassword(password)
+      console.log('[DEBUG_LOGIN] User found. Password match:', isMatch)
+    }
     
     if (user && (await user.comparePassword(password))) {
       res.json({

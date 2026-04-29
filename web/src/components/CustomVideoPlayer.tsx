@@ -110,6 +110,7 @@ export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }
       <video
         ref={videoRef}
         src={safeSrc}
+        crossOrigin="anonymous"
         className="w-full h-full cursor-pointer"
         preload="metadata"
         onClick={togglePlay}
