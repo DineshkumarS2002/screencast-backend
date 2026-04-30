@@ -11,6 +11,8 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { ScreenRecorder as SrikantRecorder } from '@srikant-kumar/capacitor-screen-recorder'
+import { Capacitor } from '@capacitor/core'
 
 export type RecordingState = 'idle' | 'recording' | 'paused' | 'stopped'
 
@@ -78,6 +80,36 @@ export function useRecorder(): RecorderResult {
     timerRef.current = null
   }, [])
 
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      const completeHandle = (SrikantRecorder as any).addListener('onRecordingComplete', async (data: any) => {
+        if (data.status && data.file_path) {
+          try {
+            // Convert native path to URL and fetch as blob
+            const url = Capacitor.convertFileSrc(data.file_path);
+            const resp = await fetch(url);
+            const blob = await resp.blob();
+            setBlob(blob);
+            setPreviewUrl(prev => { if (prev) URL.revokeObjectURL(prev); return URL.createObjectURL(blob) });
+          } catch (e) {
+            console.error('Failed to process mobile recording:', e);
+          }
+        }
+      });
+
+      const errorHandle = (SrikantRecorder as any).addListener('onRecordingError', (data: any) => {
+        setError(data.message || 'Native recording error');
+        setState('idle');
+        clearTimer();
+      });
+
+      return () => {
+        completeHandle.remove();
+        errorHandle.remove();
+      };
+    }
+  }, [clearTimer]);
+
   useEffect(() => () => {
     clearTimer()
     stopAllStreams()
@@ -94,6 +126,27 @@ export function useRecorder(): RecorderResult {
       
       // 1. Capture screen (prompts the OS picker) - Skip if camera only (for mobile)
       if (!opts.useCameraOnly) {
+        if (Capacitor.isNativePlatform()) {
+          // Explicitly request audio permission for native
+          if (opts.includeMic) {
+            const perm = await (SrikantRecorder as any).requestPermissions({ permissions: ['audio'] });
+            if (perm.audio !== 'granted') {
+              setError('Microphone permission is required for audio recording.');
+              return;
+            }
+          }
+
+          // Start native recorder
+          await SrikantRecorder.start({ recordAudio: !!opts.includeMic })
+          
+          setState('recording')
+          startTimeRef.current = Date.now()
+          timerRef.current = setInterval(() => {
+            setDuration(Math.floor((Date.now() - startTimeRef.current) / 1000))
+          }, 1000)
+          return; // Exit early as native recorder is started
+        }
+
         screenStream = await navigator.mediaDevices.getDisplayMedia({
           video: { ...quality, cursor: 'always' } as any,
           audio: true,  // system audio (if supported)
@@ -216,11 +269,22 @@ export function useRecorder(): RecorderResult {
   }, [stopAllStreams, clearTimer])
 
   // ─── Stop ─────────────────────────────────────────────────────────────────
-  const stop = useCallback(() => {
+  const stop = useCallback(async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await SrikantRecorder.stop({})
+        setState('stopped')
+        clearTimer()
+      } catch (err) {
+        setError('Failed to stop native recording')
+      }
+      return
+    }
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop()
     }
-  }, [])
+  }, [clearTimer])
 
   // ─── Pause ────────────────────────────────────────────────────────────────
   const pause = useCallback(() => {

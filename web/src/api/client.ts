@@ -8,8 +8,11 @@ import axios from 'axios'
  *   This avoids CORS issues and ensures the browser treats the API as same-origin.
  */
 
-const baseURL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? '/api' 
+const isLocalDev = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 
+                   (window.location.port === '5173' || window.location.port === '3000');
+
+const baseURL = isLocalDev
+  ? '/api'
   : 'https://screencast-backend-1.onrender.com/api'
 
 const api = axios.create({

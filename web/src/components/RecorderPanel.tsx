@@ -61,8 +61,10 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
   }
   const status = statusConfig[rec.state]
 
-  const isSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)
-  const isMobile = !isSupported && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+  const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()
+  const isWebSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)
+  const isSupported = isWebSupported || isNative
+  const isMobile = !isWebSupported && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
   const handleStart = async (useCameraOnly = false) => {
@@ -242,10 +244,17 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
           ) : isIdle && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', alignItems: 'center' }}>
               {isSupported ? (
-                <button id="btn-start-record" className="btn btn-primary" onClick={() => handleStart(false)} style={{ padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', boxShadow: '0 0 20px var(--accent-glow)' }}>
-                  <Circle size={18} fill="currentColor" />
-                  Start Screen Recording
-                </button>
+                <>
+                  <button id="btn-start-record" className="btn btn-primary" onClick={() => handleStart(false)} style={{ padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', boxShadow: '0 0 20px var(--accent-glow)' }}>
+                    <Circle size={18} fill="currentColor" />
+                    Start Screen Recording
+                  </button>
+                  {isNative && (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
+                      Native recording enabled for Android/iOS
+                    </p>
+                  )}
+                </>
               ) : (
                 <div style={{ textAlign: 'center', padding: '0.5rem' }}>
                   <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.9rem' }}>
