@@ -6,7 +6,8 @@ import axios from "axios";
 import GoogleButton from "../components/GoogleButton";
 
 export function LoginPage() {
-  console.log('DEBUG: Google Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  console.log('DEBUG: Google Client ID:', GOOGLE_CLIENT_ID);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
