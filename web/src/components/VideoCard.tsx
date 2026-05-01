@@ -4,13 +4,14 @@
  */
 
 import { useState } from 'react'
-import { Trash2, Download, Play, Clock, HardDrive, Layers, Share2 } from 'lucide-react'
+import { Trash2, Download, Play, Clock, HardDrive, Layers, Share2, Scissors } from 'lucide-react'
 import type { Video } from '../api/endpoints'
 import { CustomVideoPlayer } from './CustomVideoPlayer'
 
 interface Props {
   video: Video
   onDelete: (id: string | number) => void
+  onTrim: (video: Video) => void
   onToast: (msg: string, type: 'success' | 'error' | 'info') => void
 }
 
@@ -35,7 +36,7 @@ function fmtDate(iso: string): string {
   })
 }
 
-export function VideoCard({ video, onDelete, onToast }: Props) {
+export function VideoCard({ video, onDelete, onTrim, onToast }: Props) {
   const [showPreview, setShowPreview] = useState(false)
   const [showPreviewInCard, setShowPreviewInCard] = useState(false) // Toggle for card hover
   const [deleting, setDeleting]       = useState(false)
@@ -220,9 +221,9 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
 
         {/* Info */}
         <div style={{ padding: '0 0.25rem' }}>
-          <h3 style={{
-            marginBottom: '0.3rem',
-            fontSize: '0.9rem',
+          <h3 className="video-card-title" style={{
+            marginBottom: '0.4rem',
+            fontSize: '1rem',
             fontWeight: 700,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -242,28 +243,35 @@ export function VideoCard({ video, onDelete, onToast }: Props) {
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.85rem' }}>
+        <div className="video-card-actions" style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
           <button
-            className="btn btn-ghost"
+            className="btn btn-ghost action-btn"
             onClick={handleShare}
-            style={{ flex: 1, height: '32px', fontSize: '0.75rem', padding: '0 0.4rem', borderRadius: '10px' }}
+            style={{ flex: 1, height: '40px', borderRadius: '12px' }}
           >
-            <Share2 size={13} /> Share
+            <Share2 size={16} />
+          </button>
+          <button
+            className="btn btn-ghost action-btn"
+            onClick={() => onTrim(video)}
+            style={{ flex: 1, height: '40px', borderRadius: '12px' }}
+          >
+            <Scissors size={16} />
           </button>
           <button
             onClick={handleDownload}
-            className="btn btn-ghost"
-            style={{ flex: 1, height: '32px', fontSize: '0.75rem', padding: '0 0.4rem', borderRadius: '10px' }}
+            className="btn btn-ghost action-btn"
+            style={{ flex: 1, height: '40px', borderRadius: '12px' }}
           >
-            <Download size={13} /> Download
+            <Download size={16} />
           </button>
           <button
             onClick={handleDelete}
-            className="btn btn-ghost"
+            className="btn btn-ghost action-btn delete-btn"
             disabled={deleting}
-            style={{ height: '32px', padding: '0 0.6rem', borderRadius: '10px', color: 'var(--rec-red)', borderColor: 'rgba(239,68,68,0.2)' }}
+            style={{ height: '40px', padding: '0 0.8rem', borderRadius: '12px', color: 'var(--rec-red)', borderColor: 'rgba(239,68,68,0.2)' }}
           >
-            <Trash2 size={13} />
+            <Trash2 size={16} />
           </button>
         </div>
       </div>

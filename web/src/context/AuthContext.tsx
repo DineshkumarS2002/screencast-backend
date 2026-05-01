@@ -11,6 +11,7 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   login: (username: string, password: string) => Promise<void>
+  googleLogin: (idToken: string) => Promise<void>
   register: (username: string, email: string, password: string, password2: string) => Promise<void>
   logout: () => Promise<void>
   setUser: (user: User | null) => void
@@ -46,6 +47,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(res.data.user)
   }, [])
 
+  const googleLogin = useCallback(async (idToken: string) => {
+    const res = await authApi.googleLogin(idToken)
+    localStorage.setItem('token', res.data.token)
+    setUser(res.data.user)
+  }, [])
+
   const register = useCallback(async (
     username: string, email: string, password: string, password2: string
   ) => {
@@ -66,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoading,
       isAuthenticated: !!user,
       login,
+      googleLogin,
       register,
       logout,
       setUser,

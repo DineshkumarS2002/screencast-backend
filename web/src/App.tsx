@@ -5,6 +5,8 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { LibraryPage } from "./pages/LibraryPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { MeetingPage } from "./pages/MeetingPage";
+import { JoinPage } from "./pages/JoinPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import "./App.css";
 
@@ -17,11 +19,14 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/join/:id" element={<JoinPage />} />
+        <Route path="/:id" element={<JoinPage />} />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/meeting"  element={<MeetingPage />} />
         </Route>
 
         {/* Fallback */}

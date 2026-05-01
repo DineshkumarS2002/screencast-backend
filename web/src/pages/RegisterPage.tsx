@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { UserPlus, Mail, Lock, User, Video, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { GoogleLogin } from '@react-oauth/google'
 
 export function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -15,8 +16,21 @@ export function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   
-  const { register } = useAuth()
+  const { register, googleLogin } = useAuth()
   const navigate = useNavigate()
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setErrors({})
+    setLoading(true)
+    try {
+      await googleLogin(credentialResponse.credential)
+      navigate('/')
+    } catch (err: any) {
+      setErrors({ general: err.response?.data?.message || 'Google registration failed.' })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const validate = () => {
     const errs: Record<string, string> = {}
@@ -197,6 +211,23 @@ export function RegisterPage() {
               )}
             </button>
           </form>
+
+          <div style={{ margin: '1.5rem 0', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>OR</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setErrors({ general: 'Google login failed. Please try again.' })}
+              theme="filled_black"
+              shape="pill"
+              text="continue_with"
+              width="100%"
+            />
+          </div>
 
           <p style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
             Already registered?{' '}

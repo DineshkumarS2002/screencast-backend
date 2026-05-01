@@ -8,10 +8,13 @@ import axios from 'axios'
  *   This avoids CORS issues and ensures the browser treats the API as same-origin.
  */
 
-const isLocalDev = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 
-                   (window.location.port === '5173' || window.location.port === '3000');
+// ─── Environment Detection ──────────────────────────────────────────────────
+// On Mobile (Capacitor), we must use the production URL because localhost 
+// refers to the device itself. We only use '/api' for local web development.
+const isLocalWebDev = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 
+                     (window.location.port === '5173' || window.location.port === '3000');
 
-const baseURL = isLocalDev
+const baseURL = isLocalWebDev
   ? '/api'
   : 'https://screencast-backend-1.onrender.com/api'
 

@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import { Library, AlertCircle, RefreshCw, Layers } from 'lucide-react'
 import { videoApi, type Video } from '../api/endpoints'
 import { VideoCard } from '../components/VideoCard'
+import { VideoTrimmer } from '../components/VideoTrimmer'
 import { useToast } from '../hooks/useToast'
 import { ToastContainer } from '../components/ToastContainer'
 
@@ -14,6 +15,7 @@ export function LibraryPage() {
   const [videos, setVideos] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [trimmingVideo, setTrimmingVideo] = useState<Video | null>(null)
   const { toasts, addToast, removeToast } = useToast()
 
   const fetchVideos = useCallback(async () => {
@@ -35,11 +37,28 @@ export function LibraryPage() {
   }, [fetchVideos])
 
   const handleDelete = async (id: string | number) => {
+    if (!confirm('Are you sure you want to delete this recording?')) return
     try {
       await videoApi.delete(id)
       setVideos(prev => prev.filter(v => v.id !== id))
+      addToast('Recording deleted successfully', 'success')
     } catch (err) {
       addToast('Failed to delete recording', 'error')
+    }
+  }
+
+  const handleTrimSave = async (blob: Blob) => {
+    if (!trimmingVideo) return
+    try {
+      addToast('Uploading trimmed version...', 'info')
+      const newTitle = `Trimmed - ${trimmingVideo.title}`
+      // Simple duration calculation: trimmed duration is roughly the blob size ratio? 
+      // Actually we should pass the actual trimmed duration but for now we keep it simple.
+      const res = await videoApi.upload(blob, newTitle, trimmingVideo.duration)
+      setVideos(prev => [res.data.video, ...prev])
+      addToast('Trimmed video saved to library!', 'success')
+    } catch (err) {
+      addToast('Failed to save trimmed video', 'error')
     }
   }
 
@@ -47,9 +66,16 @@ export function LibraryPage() {
     <>
     <main style={{ flex: 1, padding: '3rem 0' }}>
       <div className="container" style={{ maxWidth: 1000 }}>
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1.5rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+        <header className="library-header" style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          marginBottom: '3rem', 
+          flexWrap: 'wrap', 
+          gap: '1.5rem' 
+        }}>
+          <div className="header-text-group">
+            <div className="header-title-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
               <div className="card-hover" style={{
                 width: 48, height: 48, borderRadius: '14px',
                 background: 'linear-gradient(135deg, var(--accent), var(--accent-alt))',
@@ -60,12 +86,12 @@ export function LibraryPage() {
               </div>
               <h1 style={{ margin: 0, fontSize: '2rem' }}>My Library</h1>
             </div>
-            <p style={{ color: 'var(--text-secondary)', paddingLeft: '3.75rem' }}>
+            <p className="header-subtitle" style={{ color: 'var(--text-secondary)', paddingLeft: '3.75rem' }}>
               Managing <strong>{videos.length}</strong> cloud session{videos.length !== 1 ? 's' : ''}
             </p>
           </div>
           <button 
-            className="btn btn-ghost" 
+            className="btn btn-ghost sync-btn" 
             onClick={fetchVideos}
             disabled={loading}
             style={{ borderRadius: '12px', padding: '0.75rem 1.25rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
@@ -105,22 +131,31 @@ export function LibraryPage() {
             <Link to="/" className="btn btn-primary" style={{ padding: '1rem 2rem', borderRadius: '16px' }}>Start Recording</Link>
           </div>
         ) : (
-          <div style={{ 
+          <div className="dashboard-grid" style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
-            gap: '2rem' 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
+            gap: '1.5rem' 
           }}>
             {videos.map(video => (
               <VideoCard 
                 key={video.id} 
                 video={video} 
                 onDelete={handleDelete}
+                onTrim={(v) => setTrimmingVideo(v)}
                 onToast={addToast}
               />
             ))}
           </div>
         )}
       </div>
+
+      {trimmingVideo && (
+        <VideoTrimmer 
+          videoUrl={trimmingVideo.file_url}
+          onClose={() => setTrimmingVideo(null)}
+          onSave={handleTrimSave}
+        />
+      )}
     </main>
 
       <ToastContainer toasts={toasts} onRemove={removeToast} />

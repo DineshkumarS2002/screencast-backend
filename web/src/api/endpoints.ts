@@ -5,6 +5,8 @@
 
 import api from './client'
 
+export const API = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000') + '/api';
+
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 export interface User {
@@ -40,6 +42,9 @@ export const authApi = {
 
   login: (username: string, password: string) =>
     api.post<AuthResponse>('/auth/login', { username, password }),
+
+  googleLogin: (idToken: string) =>
+    api.post<AuthResponse>('/auth/google-login', { idToken }),
 
   logout: () =>
     api.post('/auth/logout'),

@@ -5,9 +5,9 @@
 
 import { useState } from 'react'
 import {
-  Circle, Square, Pause, Play, Download, Upload,
+  Square, Pause, Play, Download, Upload,
   Mic, MicOff, Camera, CameraOff, Monitor, RotateCcw,
-  ChevronDown, ChevronUp, Video
+  ChevronDown, ChevronUp
 } from 'lucide-react'
 import { useRecorder, type RecorderOptions } from '../hooks/useRecorder'
 import { videoApi } from '../api/endpoints'
@@ -39,7 +39,7 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
   // Options state
   const [opts, setOpts] = useState<RecorderOptions>({
     includeMic:     true,
-    includeWebcam:  false,
+    includeWebcam:  false, // Strictly off by default
     videoQuality:   'medium',
   })
   const [showOpts, setShowOpts]   = useState(false)
@@ -72,7 +72,9 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
       const options: any = { ...opts }
       if (useCameraOnly) {
         options.useCameraOnly = true
-        options.includeWebcam = true // Ensure webcam is on for camera-only mode
+        options.includeWebcam = true // Only for camera-only mode
+      } else {
+        options.includeWebcam = opts.includeWebcam // Respect manual setting
       }
       await rec.start(options)
     } catch (err: any) {
@@ -169,7 +171,15 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
       {/* ── Status Banner ─────────────────────────────────────────────────── */}
-      <div className="glass" style={{ padding: '2rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ 
+        padding: '1.25rem', 
+        textAlign: 'center', 
+        position: 'relative', 
+        overflow: 'hidden',
+        background: '#0a0a15', 
+        borderRadius: 'var(--border-radius-lg)',
+        border: '1px solid var(--glass-border)'
+      }}>
 
         {/* Background glow when recording */}
         {isRecording && (
@@ -195,7 +205,7 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
           fontWeight: 800,
           letterSpacing: '-0.04em',
           lineHeight: 1,
-          marginBottom: '0.5rem',
+          marginBottom: '0',
           backgroundImage: isRecording
             ? 'linear-gradient(135deg, #f1f5f9, #ef4444)'
             : isStopped
@@ -228,10 +238,15 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
       </div>
 
       {/* ── Controls ──────────────────────────────────────────────────────── */}
-      <div className="glass" style={{ padding: '1.5rem' }}>
+      <div style={{ 
+        padding: '1.25rem',
+        background: '#0a0a15', 
+        borderRadius: 'var(--border-radius-lg)',
+        border: '1px solid var(--glass-border)'
+      }}>
 
         {/* Primary record controls */}
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '0.5rem' }}>
           {!isSupported && !isMobile ? (
             <div style={{ 
               padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', 
@@ -242,26 +257,21 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
               <p style={{ marginTop: '0.4rem', opacity: 0.9 }}>This browser does not support media recording. Please try a modern browser like Chrome or Safari.</p>
             </div>
           ) : isIdle && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%', alignItems: 'center' }}>
               {isSupported ? (
                 <>
-                  <button id="btn-start-record" className="btn btn-primary" onClick={() => handleStart(false)} style={{ padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', boxShadow: '0 0 20px var(--accent-glow)' }}>
-                    <Circle size={18} fill="currentColor" />
+                  <button id="btn-start-record" className="btn btn-primary" onClick={() => handleStart(false)} style={{ width: '100%', maxWidth: '320px', padding: '0.8rem 1rem', fontSize: '0.95rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', margin: '0.5rem auto', whiteSpace: 'nowrap' }}>
+                    <div className="pulse" style={{ width: 10, height: 10, borderRadius: '50%', background: 'white', flexShrink: 0 }} />
                     Start Screen Recording
                   </button>
-                  {isNative && (
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-                      Native recording enabled for Android/iOS
-                    </p>
-                  )}
                 </>
               ) : (
                 <div style={{ textAlign: 'center', padding: '0.5rem' }}>
                   <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.9rem' }}>
                      Screen recording is not supported on mobile browsers, but you can still record using your camera!
                   </p>
-                  <button id="btn-start-camera-record" className="btn btn-primary" onClick={() => handleStart(true)} style={{ padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', boxShadow: '0 0 20px var(--accent-glow)' }}>
-                    <Video size={18} fill="currentColor" />
+                  <button id="btn-start-camera-record" className="btn btn-primary" onClick={() => handleStart(true)} style={{ width: '100%', maxWidth: '320px', padding: '0.8rem 1rem', fontSize: '0.95rem', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', margin: '0.5rem auto', whiteSpace: 'nowrap' }}>
+                    <div className="pulse" style={{ width: 10, height: 10, borderRadius: '50%', background: 'white', flexShrink: 0 }} />
                     Start Camera Recording
                   </button>
                 </div>
@@ -309,27 +319,27 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
 
         {/* Post-recording actions */}
         {isStopped && rec.recordingBlob && (
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button 
               id="btn-download" 
               className="btn btn-ghost" 
               onClick={handleDownload} 
-              style={{ flex: 1 }}
+              style={{ flex: '1 1 auto', minWidth: '120px', padding: '0.6rem' }}
             >
               <Download size={16} /> 
-              Download File
+              Download
             </button>
             <button
               id="btn-upload"
               className="btn btn-primary"
               onClick={handleUpload}
               disabled={uploading}
-              style={{ flex: 1 }}
+              style={{ flex: '1 1 auto', minWidth: '120px', padding: '0.6rem' }}
             >
               <Upload size={16} />
-              {uploading ? `Uploading ${uploadPct}%` : 'Upload'}
+              {uploading ? `${uploadPct}%` : 'Upload'}
             </button>
-            <button id="btn-reset" className="btn btn-ghost btn-icon" onClick={handleReset} title="New recording">
+            <button id="btn-reset" className="btn btn-ghost" onClick={handleReset} style={{ padding: '0.6rem' }}>
               <RotateCcw size={16} />
             </button>
           </div>
@@ -351,7 +361,13 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
 
       {/* ── Settings (collapsible) ─────────────────────────────────────────── */}
       {isIdle && (
-        <div className="glass" style={{ overflow: 'hidden' }}>
+        <div style={{ 
+          overflow: 'hidden',
+          background: 'rgba(255,255,255,0.02)',
+          borderRadius: 'var(--border-radius)',
+          border: '1px solid var(--glass-border)',
+          padding: '0 0.5rem' // Added safe zone padding
+        }}>
           <button
             id="btn-toggle-settings"
             onClick={() => setShowOpts(p => !p)}
@@ -369,56 +385,49 @@ export function RecorderPanel({ onUploaded, onToast }: Props) {
           </button>
 
           {showOpts && (
-            <div style={{ padding: '0 1.5rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
+            <div style={{ padding: '0.75rem 1rem 1.75rem', display: 'grid', gridTemplateColumns: '1fr 75px', gap: '0.75rem', alignItems: 'center' }}>
               {/* Mic toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <label className="flex gap-1" style={{ alignItems: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                  {opts.includeMic ? <Mic size={16} color="var(--accent-light)" /> : <MicOff size={16} />}
-                  Microphone
-                </label>
-                <button
-                  id="btn-toggle-mic"
-                  className={`btn ${opts.includeMic ? 'btn-primary' : 'btn-ghost'}`}
-                  style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}
-                  onClick={() => setOpts(o => ({ ...o, includeMic: !o.includeMic }))}
-                >
-                  {opts.includeMic ? 'On' : 'Off'}
-                </button>
-              </div>
+              <label className="flex gap-1" style={{ alignItems: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                {opts.includeMic ? <Mic size={14} color="var(--accent-light)" /> : <MicOff size={14} />}
+                Mic
+              </label>
+              <button
+                id="btn-toggle-mic"
+                className={`btn ${opts.includeMic ? 'btn-primary' : 'btn-ghost'}`}
+                style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', minWidth: '70px', justifyContent: 'center', justifySelf: 'end', margin: 0 }}
+                onClick={() => setOpts(o => ({ ...o, includeMic: !o.includeMic }))}
+              >
+                {opts.includeMic ? 'On' : 'Off'}
+              </button>
 
               {/* Webcam toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <label className="flex gap-1" style={{ alignItems: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                  {opts.includeWebcam ? <Camera size={16} color="var(--accent-light)" /> : <CameraOff size={16} />}
-                  Webcam overlay
-                </label>
-                <button
-                  id="btn-toggle-webcam"
-                  className={`btn ${opts.includeWebcam ? 'btn-primary' : 'btn-ghost'}`}
-                  style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}
-                  onClick={() => setOpts(o => ({ ...o, includeWebcam: !o.includeWebcam }))}
-                >
-                  {opts.includeWebcam ? 'On' : 'Off'}
-                </button>
-              </div>
+              <label className="flex gap-1" style={{ alignItems: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                {opts.includeWebcam ? <Camera size={14} color="var(--accent-light)" /> : <CameraOff size={14} />}
+                Webcam
+              </label>
+              <button
+                id="btn-toggle-webcam"
+                className={`btn ${opts.includeWebcam ? 'btn-primary' : 'btn-ghost'}`}
+                style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', minWidth: '70px', justifyContent: 'center', justifySelf: 'end', margin: 0 }}
+                onClick={() => setOpts(o => ({ ...o, includeWebcam: !o.includeWebcam }))}
+              >
+                {opts.includeWebcam ? 'On' : 'Off'}
+              </button>
 
               {/* Quality selector */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Quality</label>
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  {(['low', 'medium', 'high'] as const).map(q => (
-                    <button
-                      key={q}
-                      id={`btn-quality-${q}`}
-                      className={`btn ${opts.videoQuality === q ? 'btn-primary' : 'btn-ghost'}`}
-                      style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', textTransform: 'capitalize' }}
-                      onClick={() => setOpts(o => ({ ...o, videoQuality: q }))}
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
+              <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Quality</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-end', justifySelf: 'end' }}>
+                {(['low', 'medium', 'high'] as const).map(q => (
+                  <button
+                    key={q}
+                    id={`btn-quality-${q}`}
+                    className={`btn ${opts.videoQuality === q ? 'btn-primary' : 'btn-ghost'}`}
+                    style={{ padding: '0.3rem 0.6rem', fontSize: '0.7rem', textTransform: 'capitalize', minWidth: '70px', justifyContent: 'center', margin: 0 }}
+                    onClick={() => setOpts(o => ({ ...o, videoQuality: q }))}
+                  >
+                    {q}
+                  </button>
+                ))}
               </div>
             </div>
           )}

@@ -43,7 +43,13 @@ app.use(express.urlencoded({ extended: true }))
 
 // ─── Absolute Static Serving ──────────────────────────────────────────────────
 // This handles https://.../uploads/file.webm
-app.use('/uploads', express.static(uploadPath))
+// We add CORS headers here so the browser can 'captureStream' from these videos.
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'Range')
+  next()
+}, express.static(uploadPath))
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/authRoutes'))
@@ -52,7 +58,7 @@ app.use('/api', require('./routes/videoRoutes'))
 app.get('/', (req, res) => res.json({ status: 'online', uploads_path: uploadPath }))
 
 const PORT = process.env.PORT || 8000
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`)
   console.log(`📂 Serving static files from: ${uploadPath}`)
 })

@@ -37,7 +37,11 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="container" style={{ padding: '4rem 0', maxWidth: '800px' }}>
+    <div className="container" style={{ 
+      padding: '2rem 0',
+      paddingTop: 'calc(2rem + env(safe-area-inset-top))',
+      maxWidth: '800px' 
+    }}>
       <button 
         className="btn btn-ghost" 
         onClick={() => navigate(-1)}
@@ -46,18 +50,20 @@ export function SettingsPage() {
         <ArrowLeft size={16} /> Return to previous
       </button>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '3.5rem' }}>
-        <div className="card-hover" style={{
-          width: 56, height: 56, borderRadius: '16px',
-          background: 'linear-gradient(135deg, var(--accent), var(--accent-alt))',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 8px 24px var(--accent-glow)',
-        }}>
-            <SettingsIcon size={28} color="white" />
-        </div>
-        <div>
-          <h1 style={{ marginBottom: '0.25rem', fontSize: '2.25rem' }}>Preferences</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Configure your security and workspace parameters.</p>
+      <div className="settings-header flex flex-stack" style={{ alignItems: 'center', gap: '1.25rem', marginBottom: '3.5rem' }}>
+        <div className="header-icon-group" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          <div className="card-hover" style={{
+            width: 56, height: 56, borderRadius: '16px',
+            background: 'linear-gradient(135deg, var(--accent), var(--accent-light))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 8px 24px var(--accent-glow)',
+          }}>
+              <SettingsIcon size={28} color="white" />
+          </div>
+          <div>
+            <h1 style={{ marginBottom: '0.25rem', fontSize: '2.25rem' }}>Preferences</h1>
+            <p className="header-subtitle" style={{ color: 'var(--text-secondary)' }}>Configure your security and workspace parameters.</p>
+          </div>
         </div>
       </div>
 
@@ -106,7 +112,7 @@ export function SettingsPage() {
                 required 
               />
             </div>
-            <button className="btn btn-primary" type="submit" disabled={updatingPass} style={{ marginTop: '0.5rem', alignSelf: 'flex-start', padding: '0.75rem 2rem', borderRadius: '12px' }}>
+            <button className="btn btn-primary submit-btn" type="submit" disabled={updatingPass} style={{ marginTop: '0.5rem', padding: '0.75rem 2rem', borderRadius: '12px', width: '100%' }}>
               {updatingPass ? 'Updating Security...' : 'Apply New Password'}
             </button>
           </form>
