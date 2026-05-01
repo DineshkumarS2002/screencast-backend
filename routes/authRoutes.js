@@ -3,13 +3,11 @@ const router = express.Router()
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const { protect } = require('../middleware/auth')
+const { OAuth2Client } = require('google-auth-library')
+const axios = require('axios')
 
-/**
- * Senior Full-Stack Implementation of Auth Routes
- * Includes: Robust validation, error logging, and standard HTTP status codes.
- */
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
-// Helper to generate JWT tokens
 const generateToken = (id) => {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET is missing in environment variables')
@@ -20,98 +18,126 @@ const generateToken = (id) => {
 }
 
 // @route   POST /api/auth/register
-// @desc    Register a new user
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body
-
-    // 1. Basic validation
     if (!username || !email || !password) {
-      return res.status(400).json({ message: 'All fields (username, email, password) are required.' })
+      return res.status(400).json({ message: 'All fields are required.' })
     }
-
-    // 2. Check if user already exists
     const userExists = await User.findOne({ $or: [{ email }, { username }] })
     if (userExists) {
-      const field = userExists.email === email ? 'Email' : 'Username'
-      return res.status(400).json({ message: `${field} is already registered.` })
+      return res.status(400).json({ message: 'User already exists.' })
     }
-
-    // 3. Create user (password is hashed in User model pre-save hook)
     const user = await User.create({ username, email, password })
-
-    if (user) {
-      res.status(201).json({
-        user: user.toSafeObject(),
-        token: generateToken(user._id),
-        message: 'Account created successfully!'
-      })
-    }
-  } catch (error) {
-    console.error('[AUTH_REGISTER_ERROR]:', error)
-    res.status(500).json({ 
-      message: 'Failed to create account. This is usually a database connection or config issue.',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    res.status(201).json({
+      user: user.toSafeObject(),
+      token: generateToken(user._id)
     })
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' })
   }
 })
 
 // @route   POST /api/auth/login
-// @desc    Authenticate user & get token
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body
-
-    if (!username || !password) {
-      return res.status(400).json({ message: 'Username and password are required.' })
-    }
-
-    // Find user and include password field
-    console.log('[DEBUG_LOGIN] Attempting login for:', username)
     const user = await User.findOne({ username }).select('+password')
-    
-    if (!user) {
-      console.log('[DEBUG_LOGIN] User not found in DB')
-    } else {
-      const isMatch = await user.comparePassword(password)
-      console.log('[DEBUG_LOGIN] User found. Password match:', isMatch)
-    }
-    
     if (user && (await user.comparePassword(password))) {
       res.json({
         user: user.toSafeObject(),
-        token: generateToken(user._id),
-        message: 'Welcome back!'
+        token: generateToken(user._id)
       })
     } else {
-      res.status(401).json({ message: 'Invalid credentials. Please check your username and password.' })
+      res.status(401).json({ message: 'Invalid credentials' })
     }
   } catch (error) {
-    console.error('[AUTH_LOGIN_ERROR]:', error)
-    res.status(500).json({ 
-      message: 'Server error during login. Please check backend logs.',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// @route   POST /api/auth/google-token (Implicit Flow / Access Token)
+router.post('/google-token', async (req, res) => {
+  try {
+    const { access_token } = req.body
+    if (!access_token) return res.status(400).json({ message: 'Token required' })
+
+    const googleRes = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${access_token}` }
     })
+
+    const { sub: googleId, email, name, picture } = googleRes.data
+    let user = await User.findOne({ $or: [{ googleId }, { email }] })
+
+    if (user) {
+      if (!user.googleId) {
+        user.googleId = googleId
+        await user.save()
+      }
+    } else {
+      const baseUsername = name.toLowerCase().replace(/[^a-z0-9]/g, '')
+      user = await User.create({
+        username: `${baseUsername}${Date.now()}`,
+        email,
+        googleId,
+        profilePic: picture
+      })
+    }
+
+    res.json({
+      user: user.toSafeObject(),
+      token: generateToken(user._id)
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(401).json({ message: 'Google auth failed' })
+  }
+})
+
+// @route   POST /api/auth/google (ID Token flow)
+router.post('/google', async (req, res) => {
+  try {
+    const { token } = req.body
+    const googleRes = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`)
+    const data = googleRes.data
+
+    if (!data.email) return res.status(401).json({ message: 'Invalid token' })
+
+    const { sub: googleId, email, name, picture } = data
+    let user = await User.findOne({ $or: [{ googleId }, { email }] })
+
+    if (!user) {
+      user = await User.create({
+        username: `user${Date.now()}`,
+        email,
+        googleId,
+        profilePic: picture
+      })
+    }
+
+    res.json({
+      user: user.toSafeObject(),
+      token: generateToken(user._id)
+    })
+  } catch (error) {
+    res.status(401).json({ message: 'Google auth failed' })
   }
 })
 
 // @route   GET /api/auth/me
-// @desc    Get current user profile
 router.get('/me', protect, async (req, res) => {
   try {
     res.json({
-      id: req.user._id,
-      username: req.user.username,
-      email: req.user.email
+      user: req.user.toSafeObject(),
+      message: 'Profile fetched'
     })
   } catch (error) {
     res.status(500).json({ message: 'Error fetching profile' })
   }
 })
 
-// @route   POST /api/auth/logout
 router.post('/logout', (req, res) => {
-  res.json({ message: 'Logged out successfully' })
+  res.json({ message: 'Logged out' })
 })
 
 module.exports = router
