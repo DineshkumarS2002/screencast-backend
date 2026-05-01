@@ -1,13 +1,26 @@
 node_modules/
 venv/
 venv2/
+<<<<<<< HEAD
+=======
+venv_fix/
+>>>>>>> e4e32eb715a5adbf447f6483d5309a0daa5ed7b5
 __pycache__/
 *.py[cod]
 *$py.class
 db.sqlite3
 .env
+<<<<<<< HEAD
 media/
 dist/
 .vite/
 venv_fix/
+=======
+.env.development
+media/
+.vite/
+.DS_Store
+*.log
+dist/
+>>>>>>> e4e32eb715a5adbf447f6483d5309a0daa5ed7b5
 uploads/

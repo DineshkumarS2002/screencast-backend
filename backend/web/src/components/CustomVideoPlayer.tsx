@@ -1,0 +1,268 @@
+import { useState, useRef, useEffect } from 'react'
+import { Play, Pause, Download, Volume2, VolumeX, Maximize2, Upload, Square, RotateCcw } from 'lucide-react'
+
+interface Props {
+  src: string
+  title?: string
+  onDownload?: () => void
+  onUpload?: () => void
+  autoPlay?: boolean
+}
+
+function fmtTime(sec: number): string {
+  if (isNaN(sec) || !isFinite(sec) || sec < 0) return '00:00'
+  const m = Math.floor(sec / 60).toString().padStart(2, '0')
+  const s = Math.floor(sec % 60).toString().padStart(2, '0')
+  return `${m}:${s}`
+}
+
+export function CustomVideoPlayer({ src, title, onDownload, onUpload, autoPlay }: Props) {
+  const [playing, setPlaying] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [volume, setVolume] = useState(1)
+  const [muted, setMuted] = useState(false)
+  const [showOverlay, setShowOverlay] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const sanitizeUrl = (url: string) => {
+    if (!url) return ''
+    if (url.startsWith('https://res.cloudinary.com')) return url
+    const hosts = ['http://localhost:8000', 'http://127.0.0.1:8000', 'https://screencast-backend-1.onrender.com', 'http://screencast-backend-1.onrender.com']
+    for (const host of hosts) { if (url.startsWith(host)) return url.slice(host.length) }
+    return url
+  }
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (playing) videoRef.current.pause()
+      else videoRef.current.play()
+      setPlaying(!playing)
+      setShowOverlay(true)
+      setTimeout(() => setShowOverlay(false), 500)
+    }
+  }
+
+  const stopVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
+      setPlaying(false)
+    }
+  }
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const p = (videoRef.current.currentTime / videoRef.current.duration) * 100
+      setProgress(p)
+      setCurrentTime(videoRef.current.currentTime)
+    }
+  }
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (videoRef.current) {
+      const time = (parseFloat(e.target.value) / 100) * videoRef.current.duration
+      videoRef.current.currentTime = time
+      setProgress(parseFloat(e.target.value))
+    }
+  }
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !muted
+      setMuted(!muted)
+    }
+  }
+
+  const toggleFullscreen = () => {
+    if (containerRef.current?.requestFullscreen) containerRef.current.requestFullscreen()
+  }
+
+  useEffect(() => {
+    if (autoPlay && videoRef.current) {
+      videoRef.current.play().catch(() => {})
+      setPlaying(true)
+    }
+  }, [autoPlay, src])
+
+  const safeSrc = sanitizeUrl(src)
+
+  return (
+    <div 
+      ref={containerRef}
+      className="custom-player-container"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        position: 'relative',
+        width: '100%',
+        backgroundColor: '#000',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+        aspectRatio: '16/9'
+      }}
+    >
+      <video
+        ref={videoRef}
+        src={safeSrc}
+        crossOrigin="anonymous"
+        className="w-full h-full cursor-pointer"
+        preload="metadata"
+        onClick={togglePlay}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={() => {
+          if (videoRef.current) setDuration(videoRef.current.duration)
+        }}
+        onDurationChange={() => {
+          if (videoRef.current) setDuration(videoRef.current.duration)
+        }}
+        onPlay={() => {
+          if (videoRef.current && (!duration || duration === 0)) {
+            setDuration(videoRef.current.duration)
+          }
+        }}
+        onEnded={() => setPlaying(false)}
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+      />
+
+      {/* --- Video Title --- */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        padding: '20px',
+        background: 'linear-gradient(rgba(0,0,0,0.7), transparent)',
+        color: 'white',
+        fontWeight: 600,
+        opacity: isHovered || !playing ? 1 : 0,
+        transition: 'opacity 0.3s',
+        pointerEvents: 'none'
+      }}>
+        {title}
+      </div>
+
+      <div 
+        onClick={togglePlay}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: showOverlay ? 1 : 0,
+          transition: 'opacity 0.5s',
+          pointerEvents: 'none'
+        }}
+      >
+        <div style={{
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          borderRadius: '50%',
+          padding: '20px'
+        }}>
+          {playing ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" />}
+        </div>
+      </div>
+
+      {/* --- Control Bar --- */}
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: '10px 15px 15px 15px',
+        background: 'linear-gradient(transparent, rgba(0,0,0,0.9))',
+        opacity: isHovered || !playing ? 1 : 0,
+        transition: 'opacity 0.3s'
+      }}>
+        <div style={{ position: 'relative', marginBottom: '10px' }}>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="0.1"
+            value={progress}
+            onChange={handleSeek}
+            style={{
+              width: '100%',
+              height: '4px',
+              borderRadius: '2px',
+              appearance: 'none',
+              background: `linear-gradient(to right, #ff0000 ${progress}%, rgba(255,255,255,0.2) ${progress}%)`,
+              cursor: 'pointer',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <button onClick={togglePlay} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+              {playing ? <Pause size={20} fill="white" /> : <Play size={20} fill="white" />}
+            </button>
+            <button onClick={stopVideo} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+              <Square size={18} fill="white" />
+            </button>
+            <button onClick={() => { if(videoRef.current) videoRef.current.currentTime -= 10 }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+              <RotateCcw size={18} />
+            </button>
+
+            <span style={{ color: 'white', fontSize: '13px', fontFamily: 'monospace', fontWeight: 600 }}>
+              {fmtTime(currentTime)} / {fmtTime(duration)}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={toggleMute} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', display: 'flex' }}>
+                {muted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+              </button>
+              
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={muted ? 0 : volume}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value)
+                  setVolume(val)
+                  if(videoRef.current) videoRef.current.volume = val
+                  if(val > 0) setMuted(false)
+                }}
+                style={{
+                  width: '60px',
+                  height: '4px',
+                  appearance: 'none',
+                  borderRadius: '2px',
+                  background: `linear-gradient(to right, #4ade80 ${(muted ? 0 : volume) * 100}%, rgba(255,255,255,0.2) 0%)`,
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
+              />
+            </div>
+
+            {onUpload && (
+              <button onClick={(e) => {e.stopPropagation(); onUpload();}} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+                <Upload size={18} />
+              </button>
+            )}
+            {onDownload && (
+              <button onClick={(e) => {e.stopPropagation(); onDownload();}} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+                <Download size={18} />
+              </button>
+            )}
+            <button onClick={toggleFullscreen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+              <Maximize2 size={20} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
