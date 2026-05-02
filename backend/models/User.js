@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
       minlength: [3, 'Username must be at least 3 characters'],
     },
+    name: {
+      type: String,
+      required: false,
+    },
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -53,6 +57,7 @@ userSchema.methods.toSafeObject = function () {
   return {
     id: this._id,
     username: this.username,
+    name: this.name,
     email: this.email,
   }
 }

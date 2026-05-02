@@ -61,7 +61,7 @@ export function HomePage() {
                   fontWeight: 800
                 }}
               >
-                Welcome back, <span style={{ color: 'var(--accent)' }}>{user?.username || 'Creator'}</span>
+                Welcome back, <span style={{ color: 'var(--accent)' }}>{user?.name || user?.username || 'Creator'}</span>
               </h1>
               <p
                 style={{

@@ -101,10 +101,11 @@ router.post('/google-token', async (req, res) => {
 
       user = await User.create({
         username,
+        name, // Save real name
         email,
         googleId,
         profilePic: picture,
-        password: Math.random().toString(36).slice(-10) // random dummy password
+        password: Math.random().toString(36).slice(-10)
       })
     }
 

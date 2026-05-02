@@ -12,6 +12,7 @@ export const API = (import.meta.env.VITE_API_BASE_URL || '') + '/api';
 export interface User {
   id: string | number
   username: string
+  name?: string
   email: string
 }
 

@@ -21,14 +21,21 @@ export default function GoogleButton() {
   };
 
   return (
-    <div style={{ marginTop: "1rem", width: "100%", display: "flex", justifyContent: "center" }}>
+    <div style={{ 
+      marginTop: "1rem", 
+      width: "100%", 
+      display: "flex", 
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "45px" 
+    }}>
       <GoogleLogin
         onSuccess={handleSuccess}
         onError={() => console.log("Login Failed")}
         useOneTap
         theme="filled_blue"
         shape="pill"
-        width="340px"
+        width="320" 
       />
     </div>
   );
