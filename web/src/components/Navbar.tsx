@@ -3,7 +3,7 @@
  */
 
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Library, Settings, Users, Menu, X, Home } from "lucide-react";
+import { LogOut, Library, Settings, Users, Menu, X, Home, LogIn, ShieldCheck } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 
@@ -116,14 +116,55 @@ export function Navbar() {
                 )}
               </>
             ) : (
-              <div className="flex gap-1">
-                <Link to="/login" className="btn btn-ghost">
-                  Log in
-                </Link>
-                <Link to="/register" className="btn btn-primary">
-                  Get Started
-                </Link>
-              </div>
+              <>
+                <div className="flex gap-1 hide-mobile" style={{ alignItems: 'center' }}>
+                  <Link to="/login" className="btn btn-ghost" style={{ 
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: '10px',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    background: 'rgba(255,255,255,0.05)'
+                  }}>
+                    Log in
+                  </Link>
+                  <Link to="/register" className="btn btn-primary" style={{ 
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: '10px',
+                    fontWeight: 700,
+                    fontSize: '0.9rem'
+                  }}>
+                    Get Started
+                  </Link>
+                </div>
+
+                <button 
+                  className="btn btn-ghost btn-icon show-mobile" 
+                  onClick={() => setIsOpen(!isOpen)}
+                  style={{ zIndex: 1001, color: 'white' }}
+                >
+                  {isOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+
+                {isOpen && (
+                  <div className="mobile-menu-overlay" onClick={() => setIsOpen(false)}>
+                    <div className="mobile-menu-content glass" onClick={e => e.stopPropagation()}>
+                      <div style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)', marginBottom: '1rem' }}>
+                        <p style={{ fontWeight: 700, color: 'var(--accent)' }}>Welcome</p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sign in to start recording</p>
+                      </div>
+                      <Link to="/" onClick={() => setIsOpen(false)} className="mobile-menu-item">
+                        <Home size={18} /> Home
+                      </Link>
+                      <Link to="/login" onClick={() => setIsOpen(false)} className="mobile-menu-item">
+                        <LogIn size={18} /> Log In
+                      </Link>
+                      <Link to="/register" onClick={() => setIsOpen(false)} className="mobile-menu-item">
+                        <ShieldCheck size={18} /> Get Started
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

@@ -1,42 +1,34 @@
-import { GoogleLogin } from "@react-oauth/google";
-import axios from "axios";
+import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
+import { useAuth } from '../context/AuthContext';
 
 export default function GoogleButton() {
-  const handleSuccess = async (credentialResponse: any) => {
-    try {
-      const API_URL = import.meta.env.VITE_API_BASE_URL || '';
-      const res = await axios.post(
-        `${API_URL}/api/auth/google-token`,
-        {
-          credential: credentialResponse.credential, // Send the ID Token
-        }
-      );
+  const { googleLogin } = useAuth();
 
-      console.log("Login success:", res.data);
-      localStorage.setItem("token", res.data.token);
-      window.location.href = "/";
-    } catch (err) {
-      console.error("Backend auth failed ❌", err);
+  const handleSuccess = (credentialResponse: CredentialResponse) => {
+    if (credentialResponse.credential) {
+      googleLogin(credentialResponse.credential);
     }
   };
 
   return (
     <div style={{ 
-      marginTop: "1rem", 
+      marginTop: "1.5rem", 
       width: "100%", 
       display: "flex", 
       justifyContent: "center",
-      alignItems: "center",
-      minHeight: "45px" 
+      padding: "0 10px", 
+      boxSizing: "border-box"
     }}>
-      <GoogleLogin
-        onSuccess={handleSuccess}
-        onError={() => console.log("Login Failed")}
-        useOneTap
-        theme="filled_blue"
-        shape="pill"
-        width="320" 
-      />
+      <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <GoogleLogin
+          onSuccess={handleSuccess}
+          onError={() => console.log("Login Failed")}
+          useOneTap
+          theme="filled_blue"
+          shape="pill"
+          width="100%" // Google supports '100%' if wrapped correctly in some versions
+        />
+      </div>
     </div>
   );
 }
