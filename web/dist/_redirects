@@ -3,10 +3,10 @@
 # ──────────────────────────────────────────────────────────────────────────────
 
 # 1. API PROXY: Forwards all /api/ requests to the Render backend
-/api/*       https://screencast-backend-1.onrender.com/api/:splat       200
+/api/*       https://screencast-backend-1.onrender.com/api/:splat       200!
 
 # 2. MEDIA PROXY: Forwards /uploads/ requests to handle static videos/images
-/uploads/*   https://screencast-backend-1.onrender.com/uploads/:splat   200
+/uploads/*   https://screencast-backend-1.onrender.com/uploads/:splat   200!
 
 # 3. SPA FALLBACK: Ensures React Router handles all deep links on refresh
 /*           /index.html                                               200

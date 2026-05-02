@@ -56,41 +56,66 @@ router.post('/login', async (req, res) => {
   }
 })
 
-// @route   POST /api/auth/google-token (Implicit Flow / Access Token)
+// @route   POST /api/auth/google-token (ID Token / Credential Flow)
 router.post('/google-token', async (req, res) => {
   try {
-    const { access_token } = req.body
-    if (!access_token) return res.status(400).json({ message: 'Token required' })
+    const { credential } = req.body
 
-    const googleRes = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
-      headers: { Authorization: `Bearer ${access_token}` }
+    if (!credential) {
+      return res.status(400).json({ message: 'No credential provided' })
+    }
+
+    // Verify the ID Token
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
     })
 
-    const { sub: googleId, email, name, picture } = googleRes.data
+    const payload = ticket.getPayload()
+    const { sub: googleId, email, name, picture } = payload
+
+    // Check if user exists by googleId or email
     let user = await User.findOne({ $or: [{ googleId }, { email }] })
 
     if (user) {
+      // Update googleId if missing
       if (!user.googleId) {
         user.googleId = googleId
         await user.save()
       }
     } else {
-      const baseUsername = name.toLowerCase().replace(/[^a-z0-9]/g, '')
+      // Create new user with unique username
+      let baseUsername = name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user'
+      let username = baseUsername
+      
+      // Ensure uniqueness
+      let isUnique = false
+      while (!isUnique) {
+        const existing = await User.findOne({ username })
+        if (!existing) {
+          isUnique = true
+        } else {
+          username = `${baseUsername}${Math.floor(Math.random() * 10000)}`
+        }
+      }
+
       user = await User.create({
-        username: `${baseUsername}${Date.now()}`,
+        username,
         email,
         googleId,
-        profilePic: picture
+        profilePic: picture,
+        password: Math.random().toString(36).slice(-10) // random dummy password
       })
     }
 
     res.json({
       user: user.toSafeObject(),
-      token: generateToken(user._id)
+      token: generateToken(user._id),
     })
+
   } catch (error) {
-    console.error(error)
-    res.status(401).json({ message: 'Google auth failed' })
+    console.error('[GOOGLE_AUTH_ERROR]:', error)
+    res.status(500).json({ message: 'Google authentication failed' })
   }
 })
 

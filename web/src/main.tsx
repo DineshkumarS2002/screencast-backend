@@ -8,6 +8,10 @@ import './index.css'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
+if (!GOOGLE_CLIENT_ID) {
+  console.error("❌ VITE_GOOGLE_CLIENT_ID is missing! Google Login will not work. Please add it to your Netlify Environment Variables.")
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>

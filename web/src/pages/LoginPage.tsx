@@ -26,7 +26,7 @@ export function LoginPage() {
     const wakeUp = async () => {
       try {
         const API_URL =
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+          import.meta.env.VITE_API_BASE_URL || "";
         await axios.get(API_URL);
       } catch (e) {
         // Ignore error, just a ping

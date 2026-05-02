@@ -19,6 +19,15 @@ if (!fs.existsSync(uploadPath)) {
   console.log('✅ Found uploads directory at:', uploadPath)
 }
 
+// ─── Global Headers ──────────────────────────────────────────────────────────
+app.use((req, res, next) => {
+  // Relax COOP to allow cross-origin popups (Google Auth)
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  // Ensure we don't block resources
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  next();
+});
+
 // ─── Middleware ───────────────────────────────────────────────────────────────
 const allowedOrigins = [
   'http://localhost:5173',
